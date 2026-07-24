@@ -4,7 +4,6 @@
   "description": "Destiny Rewards Card Landing Page & Simulator",
   "main": "index.html",
   "scripts": {
-    "build": "echo 'No build step'",
     "start": "node server.js",
     "dev": "node server.js"
   },
