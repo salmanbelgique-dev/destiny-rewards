@@ -8,12 +8,9 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-
 const firebaseConfig = {
   apiKey: "AIzaSyBOCEyQN4zcZyNTWhO9-mN1-sBxM3RSywI",
-  // Use Vercel proxy for custom domain popup, fallback to default for local dev
-  authDomain: isLocalhost ? "destiny-rewards-f3a5d.firebaseapp.com" : "destinyrewards.store",
+  authDomain: "destinyrewards.store",
   projectId: "destiny-rewards-f3a5d",
   storageBucket: "destiny-rewards-f3a5d.firebasestorage.app",
   messagingSenderId: "650427918746",
