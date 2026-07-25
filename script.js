@@ -1591,7 +1591,7 @@ function generateGoogleAvatar(initial, bgColor) {
 }
 
 function handleLoggedInUser(user) {
-  const name = user.displayName || "Guest";
+  const name = user.displayName || (user.email ? user.email.split('@')[0] : "User");
   const email = user.email || "";
   // Use user's real Google photo URL or generate initial avatar
   const photoURL = user.photoURL || generateGoogleAvatar(name.charAt(0), "#1a73e8");
@@ -1605,7 +1605,7 @@ function handleLoggedInUser(user) {
     if (btnText) btnText.textContent = "Completing sign-in...";
   }
 
-  // Sequential database check (fully compatible with all browsers) with timeout fallback
+  // Sequential database check with fast 1.5s timeout fallback
   const checkUserRef = () => {
     const dbPromise = new Promise((resolve, reject) => {
       // Step 1: Check Cloud Firestore
@@ -1663,9 +1663,9 @@ function handleLoggedInUser(user) {
       }
     });
 
-    // Add a 4-second timeout to database reads
+    // Add a fast 1.5-second timeout to database reads so login responds instantly
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Database lookup timed out (possibly blocked by browser tracking prevention)")), 4000)
+      setTimeout(() => reject(new Error("Database lookup timeout")), 1500)
     );
 
     return Promise.race([dbPromise, timeoutPromise]);
@@ -1674,7 +1674,6 @@ function handleLoggedInUser(user) {
   return checkUserRef()
     .then(userDataFromDb => {
       console.log("Reusing existing User ID:", userDataFromDb.userId);
-      // Restore spin history and lifetime spins from database to local storage
       const spins = userDataFromDb.spins || [];
       const lifetimeSpins = userDataFromDb.lifetimeSpins || 0;
       const discountBuyClicks = userDataFromDb.discountBuyClicks || 0;
@@ -1682,7 +1681,6 @@ function handleLoggedInUser(user) {
       localStorage.setItem("spinHistory", JSON.stringify(spins));
       localStorage.setItem("discountBuyClicks", discountBuyClicks);
       
-      // Restore discount state from DB to local storage
       const activeDiscount = userDataFromDb.activeDiscount || null;
       const discountTimestamp = userDataFromDb.discountTimestamp || null;
       const discountToken = userDataFromDb.discountToken || null;
@@ -1701,22 +1699,16 @@ function handleLoggedInUser(user) {
         localStorage.removeItem("discountToken");
       }
       
-      // Update UI elements based on restored discount
       checkDiscountExpiration();
       
-      const alias = userDataFromDb.username || null;
+      const alias = userDataFromDb.username || name;
       const gName = userDataFromDb.name || name;
       return { isNew: false, id: userDataFromDb.userId, dbName: alias, gName: gName, dbPhoto: userDataFromDb.photoURL };
     })
     .catch(err => {
-      console.warn("All database lookups failed or resolved empty. Generating new ID. Details:", err);
+      console.warn("Database lookup resolved empty/timed out. Generating user profile:", err);
       const newRandomId = Math.floor(10000 + Math.random() * 90000);
-      console.log("New user registered. Generated new User ID:", newRandomId);
-      // Initialize new user spin data
-      localStorage.setItem("lifetimeSpins", "0");
-      localStorage.setItem("spinHistory", "[]");
-      localStorage.setItem("discountBuyClicks", "0");
-      return { isNew: true, id: newRandomId, dbName: null, gName: null, dbPhoto: null };
+      return { isNew: true, id: newRandomId, dbName: name, gName: name, dbPhoto: photoURL };
     })
     .then((result) => {
       if (signInBtn) {
@@ -1726,21 +1718,14 @@ function handleLoggedInUser(user) {
         if (btnText) btnText.textContent = "Sign up with Google";
       }
 
-      if (result.isNew || !result.dbName) {
-        showProfileSetupGate(user, result.id, name, photoURL);
-      } else {
-        completeLogin(user, result.id, result.dbName, result.gName, result.dbPhoto || photoURL);
-      }
+      // Auto-complete login immediately so user is signed in with Google seamlessly on all pages
+      completeLogin(user, result.id, result.dbName || name, result.gName || name, result.dbPhoto || photoURL);
     })
     .catch(err => {
-      console.error("Error completing user login and profile setup:", err);
-      alert("Error completing login setup: " + err.message);
-      if (signInBtn) {
-        signInBtn.disabled = false;
-        signInBtn.style.opacity = "1";
-        const btnText = signInBtn.querySelector(".google-btn-text");
-        if (btnText) btnText.textContent = "Sign up with Google";
-      }
+      console.error("Error completing user login:", err);
+      // Fallback: Ensure user is still logged in locally even on unexpected error
+      const fallbackId = Math.floor(10000 + Math.random() * 90000);
+      completeLogin(user, fallbackId, name, name, photoURL);
     });
 }
 
