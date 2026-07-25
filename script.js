@@ -3427,21 +3427,27 @@ function initDebugPanel() {
   const profileName = localStorage.getItem("profileName") || "null";
   const checkoutFormExists = !!document.getElementById("checkout-form");
 
-  const debugDiv = document.createElement("div");
-  debugDiv.id = "antigravity-debug-panel";
-  debugDiv.style.position = "fixed";
-  debugDiv.style.bottom = "10px";
-  debugDiv.style.right = "10px";
-  debugDiv.style.zIndex = "999999";
-  debugDiv.style.background = "rgba(0, 0, 0, 0.9)";
-  debugDiv.style.border = "2px solid #3b82f6";
-  debugDiv.style.borderRadius = "8px";
-  debugDiv.style.padding = "12px";
-  debugDiv.style.color = "#ffffff";
-  debugDiv.style.fontFamily = "monospace";
-  debugDiv.style.fontSize = "12px";
-  debugDiv.style.boxShadow = "0 4px 10px rgba(0,0,0,0.5)";
-  debugDiv.style.width = "300px";
+  let debugDiv = document.getElementById("antigravity-debug-panel");
+  if (!debugDiv) {
+    debugDiv = document.createElement("div");
+    debugDiv.id = "antigravity-debug-panel";
+    debugDiv.style.position = "fixed";
+    debugDiv.style.bottom = "10px";
+    debugDiv.style.right = "10px";
+    debugDiv.style.zIndex = "999999";
+    debugDiv.style.background = "rgba(0, 0, 0, 0.9)";
+    debugDiv.style.border = "2px solid #3b82f6";
+    debugDiv.style.borderRadius = "8px";
+    debugDiv.style.padding = "12px";
+    debugDiv.style.color = "#ffffff";
+    debugDiv.style.fontFamily = "monospace";
+    debugDiv.style.fontSize = "12px";
+    debugDiv.style.boxShadow = "0 4px 10px rgba(0,0,0,0.5)";
+    debugDiv.style.width = "300px";
+    document.body.appendChild(debugDiv);
+  }
+
+  const lastActionHTML = document.getElementById("debug-last-action") ? document.getElementById("debug-last-action").innerHTML : "Last Action: None";
 
   debugDiv.innerHTML = `
     <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #3b82f6; padding-bottom: 4px; display: flex; justify-content: space-between;">
@@ -3454,10 +3460,9 @@ function initDebugPanel() {
     <div style="margin-bottom: 4px;">Username: <span style="color: #6b8aff">${profileName}</span></div>
     <div style="margin-bottom: 4px;">Checkout Form: <span style="color: ${checkoutFormExists ? '#25d366' : '#ff5555'}">${checkoutFormExists ? 'FOUND' : 'NOT FOUND'}</span></div>
     <div id="debug-last-action" style="margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 6px; color: #ffea00; font-size: 11px;">
-      Last Action: None
+      ${lastActionHTML}
     </div>
   `;
-  document.body.appendChild(debugDiv);
 }
 
 

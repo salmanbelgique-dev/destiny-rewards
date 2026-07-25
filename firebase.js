@@ -40,6 +40,32 @@ window.getRedirectResult = getRedirectResult;
 window.updateProfile = updateProfile;
 window.onAuthStateChanged = onAuthStateChanged;
 
+// Automatic Global Auth Observer to keep UI & state in sync on page load or sign in
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("Firebase Auth Observer: User is logged in ->", user.email || user.displayName);
+    localStorage.setItem("profileIsLoggedIn", "true");
+    if (user.displayName) localStorage.setItem("profileName", user.displayName);
+    if (user.email) localStorage.setItem("profileEmail", user.email);
+    if (user.photoURL) localStorage.setItem("profileLogo", user.photoURL);
+
+    const checkAndSync = () => {
+      if (typeof window.handleLoggedInUser === "function") {
+        window.handleLoggedInUser(user);
+      } else {
+        setTimeout(checkAndSync, 100);
+      }
+    };
+    checkAndSync();
+  } else {
+    console.log("Firebase Auth Observer: No active user session.");
+  }
+
+  if (typeof window.initDebugPanel === "function") {
+    window.initDebugPanel();
+  }
+});
+
 // Expose DB helpers
 window.db = db;
 window.doc = doc;
