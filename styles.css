@@ -4990,11 +4990,25 @@ html {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: #ffffff;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
-  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkout-sub-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 8px #3b82f6;
+  flex-shrink: 0;
 }
 
 .checkout-description-text {
@@ -5009,6 +5023,452 @@ html {
   color: rgba(59, 130, 246, 0.7);
   font-style: italic;
   margin: 0;
+}
+
+/* Checkout Game Album Grid (Liquid Glass Gallery) */
+.checkout-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+  .checkout-photos-grid {
+    gap: 8px;
+  }
+}
+
+.checkout-photo-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  aspect-ratio: 16 / 9;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.checkout-photo-card:hover {
+  transform: translateY(-3px) scale(1.03);
+  border-color: rgba(107, 138, 255, 0.6);
+  box-shadow: 0 12px 30px rgba(107, 138, 255, 0.35),
+              0 0 15px rgba(107, 138, 255, 0.2);
+}
+
+.checkout-photo-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.checkout-photo-card:hover img {
+  transform: scale(1.08);
+}
+
+/* ==========================================================================
+   CUSTOMER REVIEWS SECTION (Below Similar Products Block)
+   ========================================================================== */
+
+.checkout-reviews-container {
+  width: 100%;
+  min-width: 0;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-sizing: border-box;
+}
+
+.checkout-reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.reviews-count-badge {
+  color: #6b8aff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.1rem;
+  margin-left: 6px;
+  text-shadow: 0 0 10px rgba(107, 138, 255, 0.4);
+}
+
+/* Submission Box */
+.review-submission-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 20px 24px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  margin-bottom: 24px;
+}
+
+.review-form-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 14px;
+}
+
+/* 5-Star Interactive Rating Row */
+.review-star-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.star-rating-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.review-star-rating {
+  display: flex;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.review-star-rating .star-btn {
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.review-star-rating .star-btn.active,
+.review-star-rating .star-btn:hover {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  transform: scale(1.15);
+}
+
+.rating-value-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #ffd700;
+  margin-left: 6px;
+}
+
+/* Textarea */
+.review-comment-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.92rem;
+  outline: none;
+  resize: vertical;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+}
+
+.review-comment-textarea:focus {
+  border-color: #6b8aff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 15px rgba(107, 138, 255, 0.3);
+}
+
+.review-comment-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Photo Upload Controls */
+.review-photo-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.review-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.review-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #6b8aff;
+  color: #ffffff;
+}
+
+.review-photo-previews {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.review-photo-thumb-wrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.review-photo-thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.review-photo-thumb-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: rgba(239, 68, 68, 0.9);
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  border: 1px solid #ffffff;
+}
+
+.review-submit-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 26px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+}
+
+.review-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.55);
+}
+
+.review-login-prompt {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.review-login-msg {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+/* Reviews Feed List (Sorted Newest to Oldest) */
+.reviews-feed-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reviews-empty-state {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-style: italic;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.review-card-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 18px 22px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.review-card-item:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.review-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.review-author-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.review-author-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.review-author-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+/* Inline Stars next to username */
+.review-card-inline-stars {
+  color: #ffd700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  margin-left: 8px;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.review-card-date {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+}
+
+.review-card-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.55;
+  margin: 0 0 12px 0;
+  word-break: break-word;
+}
+
+.review-card-photos {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.review-card-photo-thumb {
+  width: 76px;
+  height: 76px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.review-card-photo-thumb:hover {
+  transform: scale(1.06);
+  border-color: #6b8aff;
+  box-shadow: 0 6px 18px rgba(107, 138, 255, 0.4);
+}
+
+.review-card-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Rounded Edit & Delete Action Buttons (Only for review author) */
+.review-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.review-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.review-action-btn {
+  border-radius: 20px;
+  padding: 5px 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.76rem;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.review-action-btn.edit-btn {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.review-action-btn.edit-btn:hover {
+  background: rgba(59, 130, 246, 0.35);
+  color: #ffffff;
+  border-color: #60a5fa;
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.4);
+  transform: translateY(-1px);
+}
+
+.review-action-btn.delete-btn {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.review-action-btn.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.35);
+  color: #ffffff;
+  border-color: #f87171;
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.4);
+  transform: translateY(-1px);
 }
 
 /* Right Column: Checkout Action Panel */
@@ -5493,6 +5953,19 @@ html {
   z-index: 5;
 }
 
+/* Gold Price Styling for 96X Gold Item on Checkout */
+.theme-gold-borders .checkout-price-value,
+.theme-gold-borders .checkout-summary-total span:last-child,
+.theme-gold-borders #checkout-prod-price,
+.theme-gold-borders #checkout-total-price,
+.theme-gold-borders #checkout-pay-price {
+  color: #ffd700 !important;
+  background: linear-gradient(135deg, #ffe066 0%, #ffd700 50%, #f59e0b 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.45) !important;
+}
+
 /* Homepage 2nd Layer Left Card Flipper */
 .homepage-left-flipper {
   perspective: 1500px;
@@ -5722,3 +6195,565 @@ html {
   }
 }
 
+/* ==========================================================================
+   OUR SIMILAR PRODUCTS - RESPONSIVE 4-CARD CAROUSEL WITH SWIPE & ARROW NAV
+   ========================================================================== */
+
+.checkout-details-panel,
+.checkout-description-container {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.similar-products-container {
+  width: 100%;
+  min-width: 0;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.similar-products-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+}
+
+.similar-products-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.15rem;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.similar-products-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(180deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 8px #3b82f6;
+  flex-shrink: 0;
+}
+
+.similar-carousel-wrapper {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.similar-carousel-track {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+  padding: 4px 2px 12px 2px;
+}
+
+.similar-carousel-track.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+
+.similar-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Liquid Glass Card Styling */
+.similar-carousel-track .similar-glass-card {
+  width: calc((100% - 24px) / 3);
+  flex: 0 0 calc((100% - 24px) / 3);
+  min-width: calc((100% - 24px) / 3);
+  height: 350px;
+  scroll-snap-align: start;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 
+    0 14px 35px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* Liquid glass top reflection glare */
+.similar-glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 42%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 100%);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+}
+
+.similar-glass-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.similar-glass-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: rgba(96, 165, 250, 0.7);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(59, 130, 246, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.35);
+}
+
+.similar-glass-card:hover .similar-glass-glow {
+  opacity: 1;
+}
+
+/* Thumbnail Container - Bigger Artwork */
+.similar-card-thumb-container {
+  width: 100%;
+  height: 155px;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.similar-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.similar-glass-card:hover .similar-card-thumb {
+  transform: scale(1.08);
+}
+
+/* Card Body (Title, Badges, Footer) */
+.similar-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.similar-card-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.3;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 2.6em;
+}
+
+/* Badges */
+.similar-card-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0;
+}
+
+.similar-card-badges .buy-product-badge {
+  font-size: 0.65rem;
+  padding: 3px 7px;
+  border-radius: 5px;
+}
+
+/* Footer (Price & BUY NOW Blue Button) */
+.similar-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.similar-card-price {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #3b82f6;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.similar-buy-now-btn {
+  font-family: 'League Spartan', 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 9px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.similar-buy-now-btn:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.6);
+}
+
+/* Responsive Sizing */
+@media (max-width: 1100px) {
+  .similar-carousel-track .similar-glass-card {
+    width: calc((100% - 24px) / 3);
+    flex: 0 0 calc((100% - 24px) / 3);
+    min-width: calc((100% - 24px) / 3);
+  }
+}
+
+@media (max-width: 768px) {
+  .similar-carousel-track .similar-glass-card {
+    width: calc((100% - 12px) / 2);
+    flex: 0 0 calc((100% - 12px) / 2);
+    min-width: calc((100% - 12px) / 2);
+  }
+}
+
+@media (max-width: 480px) {
+  .similar-carousel-track .similar-glass-card {
+    width: 100%;
+    flex: 0 0 100%;
+    min-width: 100%;
+  }
+}
+
+
+
+/* ============================================================
+   REVIEW CARDS (dynamically rendered by JS)
+   ============================================================ */
+.review-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.015) 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.review-card:hover {
+  border-color: rgba(107, 138, 255, 0.4);
+  box-shadow: 0 4px 18px rgba(59, 130, 246, 0.12);
+}
+
+.review-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.review-avatar-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #6b8aff 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.review-username {
+  font-family: 'League Spartan', 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #ffffff;
+}
+
+.review-date {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 2px;
+}
+
+.review-comment-text {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.55;
+  margin-top: 4px;
+}
+
+
+
+.similar-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.similar-glass-card:hover .similar-card-thumb {
+  transform: scale(1.08);
+}
+
+/* Card Body (Title, Badges, Footer) */
+.similar-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.similar-card-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.3;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 2.6em;
+}
+
+/* Badges */
+.similar-card-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0;
+}
+
+.similar-card-badges .buy-product-badge {
+  font-size: 0.65rem;
+  padding: 3px 7px;
+  border-radius: 5px;
+}
+
+/* Footer (Price & BUY NOW Blue Button) */
+.similar-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.similar-card-price {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #3b82f6;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.similar-buy-now-btn {
+  font-family: 'League Spartan', 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 9px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.similar-buy-now-btn:hover {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(59, 130, 246, 0.6);
+}
+
+/* Responsive Sizing */
+@media (max-width: 1100px) {
+  .similar-carousel-track .similar-glass-card {
+    width: calc((100% - 24px) / 3);
+    flex: 0 0 calc((100% - 24px) / 3);
+    min-width: calc((100% - 24px) / 3);
+  }
+}
+
+@media (max-width: 768px) {
+  .similar-carousel-track .similar-glass-card {
+    width: calc((100% - 12px) / 2);
+    flex: 0 0 calc((100% - 12px) / 2);
+    min-width: calc((100% - 12px) / 2);
+  }
+}
+
+@media (max-width: 480px) {
+  .similar-carousel-track .similar-glass-card {
+    width: 100%;
+    flex: 0 0 100%;
+    min-width: 100%;
+  }
+}
+
+
+
+/* ============================================================
+   REVIEW CARDS (dynamically rendered by JS)
+   ============================================================ */
+.review-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.015) 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.review-card:hover {
+  border-color: rgba(107, 138, 255, 0.4);
+  box-shadow: 0 4px 18px rgba(59, 130, 246, 0.12);
+}
+
+.review-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.review-avatar-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #6b8aff 100%);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.review-username {
+  font-family: 'League Spartan', 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #ffffff;
+}
+
+.review-date {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 2px;
+}
+
+.review-comment-text {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.55;
+  margin-top: 4px;
+}
+
+.delete-review-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 22px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+}
+
+.delete-review-btn:hover {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(239, 68, 68, 0.6);
+}
+
+.delete-review-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}

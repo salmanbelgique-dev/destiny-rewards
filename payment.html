@@ -66,13 +66,19 @@
       align-items: center;
       justify-content: center;
       gap: 20px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #3b82f6;
       border-radius: 20px;
       padding: 16px 24px;
       margin-bottom: 24px;
       backdrop-filter: blur(15px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .checkout-details-panel,
+    .checkout-action-panel {
+      border: 1px solid rgba(59, 130, 246, 0.5) !important;
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.2), 0 30px 60px rgba(0, 0, 0, 0.5) !important;
     }
     .timer-circle-box {
       width: 54px;
@@ -99,7 +105,8 @@
     .timer-text-box {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
+      text-align: center;
       gap: 2px;
     }
     .timer-label {
@@ -109,6 +116,8 @@
       color: rgba(255, 255, 255, 0.4);
       letter-spacing: 1.5px;
       text-transform: uppercase;
+      text-align: center;
+      width: 100%;
     }
     .timer-number {
       font-family: 'Montserrat', sans-serif;
@@ -117,6 +126,8 @@
       color: #3b82f6;
       letter-spacing: 0.5px;
       line-height: 1;
+      text-align: center;
+      width: 100%;
       transition: color 0.3s ease;
     }
   </style>
@@ -187,13 +198,13 @@
         </a>
       </li>
       <li>
-        <a href="index.html#second-layer" class="sticky-nav-link" id="nav-bid-link">
+        <a href="#second-layer" class="sticky-nav-link" id="nav-bid-link">
           <img src="images/lock_cropped.png" alt="Lock" class="nav-lock-icon">
           BID
         </a>
       </li>
       <li>
-        <a href="index.html#second-layer" class="sticky-nav-link" id="nav-free-link">
+        <a href="#second-layer" class="sticky-nav-link" id="nav-free-link">
           <img src="images/lock_cropped.png" alt="Lock" class="nav-lock-icon">
           FOR FREE
         </a>
@@ -260,30 +271,64 @@
         
         <!-- Left Column: Product Info & Customer Details -->
         <div class="checkout-details-panel">
-          <!-- Product Summary Preview (Extended big thumbnail stacked with title and price in center) -->
-          <div class="checkout-product-card-preview" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin: -32px -32px 0 -32px; width: calc(100% + 64px); overflow: hidden; border-top-left-radius: 24px; border-top-right-radius: 24px;">
+          <!-- Product Summary Preview -->
+          <div class="checkout-product-card-preview" style="border-bottom: none; padding-bottom: 16px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; margin: -32px -32px 0 -32px; width: calc(100% + 64px); overflow: hidden; border-top-left-radius: 24px; border-top-right-radius: 24px;">
             <div class="checkout-thumb-box" style="width: 100%; aspect-ratio: 1400 / 670; overflow: hidden; border: none; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; border-radius: 0;">
               <img id="payment-prod-img" src="images/product_placeholder.png" alt="Product Thumbnail" class="checkout-preview-thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
-            <div class="checkout-desc-box" style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; padding: 0 32px; box-sizing: border-box;">
-              <h2 id="payment-prod-title" class="checkout-product-title-text" style="color:#ffffff; font-family:'League Spartan', sans-serif; font-size:1.6rem; font-weight: 800; letter-spacing:0.5px; text-transform: uppercase; margin: 0; line-height: 1.3;">Lucky Premium Game</h2>
-              <div class="checkout-price-preview" style="display: flex; justify-content: center; align-items: center; gap: 8px;">
-                <span class="checkout-price-label" style="color: rgba(255,255,255,0.6); font-weight: 600; font-size: 1.1rem;">Price:</span>
-                <span id="payment-prod-price" class="checkout-price-value" style="color: #3b82f6; font-weight: 800; font-size: 1.6rem;">250$</span>
+            
+            <div class="checkout-desc-box" style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; padding: 0 32px; box-sizing: border-box;">
+              <!-- ORDER DETAILS Header & Details inside Liquid Glass Box -->
+              <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 14px; padding: 14px 20px; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 6px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+                <div id="payment-order-details-header" style="font-family:'League Spartan', sans-serif; font-size:1.4rem; font-weight: 800; color: #60a5fa; letter-spacing:1.5px; text-transform: uppercase;">ORDER DETAILS:</div>
+                
+                <!-- Stacked Lines: Purchased Item, Email, TxID, Price -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
+                  <!-- Line 1: Purchased Item -->
+                  <div style="font-size: 1.05rem; color: rgba(255,255,255,0.75); text-align: center; width: 100%; line-height: 1.4;">
+                    <span style="color: rgba(255,255,255,0.6); font-weight: 600; margin-right: 6px;">Purchased Item:</span><span id="payment-prod-title" style="color: #ffffff; font-weight: bold;">Lucky Premium Game</span>
+                  </div>
+
+                  <!-- Line 2: Delivery Email -->
+                  <div style="font-size: 1.05rem; color: rgba(255,255,255,0.75); display: flex; gap: 8px; justify-content: center; align-items: center; width: 100%;">
+                    <span style="color: rgba(255,255,255,0.6); font-weight: 600;">Delivery Email:</span>
+                    <span id="payment-email" style="color: #ffffff; font-weight: bold;">you@example.com</span>
+                  </div>
+
+                  <!-- Line 3: Transaction ID -->
+                  <div style="font-size: 1.05rem; color: rgba(255,255,255,0.75); display: flex; gap: 8px; justify-content: center; align-items: center; width: 100%;">
+                    <span style="color: rgba(255,255,255,0.6); font-weight: 600;">Transaction ID:</span>
+                    <span id="payment-txid" style="color: #a855f7; font-weight: bold; letter-spacing: 1px;">-----</span>
+                  </div>
+
+                  <!-- Line 4: Price -->
+                  <div class="checkout-price-preview" style="display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; margin-top: 2px;">
+                    <span class="checkout-price-label" style="color: rgba(255,255,255,0.6); font-weight: 600; font-size: 1.05rem;">Price:</span>
+                    <span id="payment-prod-price" class="checkout-price-value" style="color: #3b82f6; font-weight: 800; font-size: 1.5rem;">250$</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           
-          <!-- Customer Details directly below price (no extra card wrapper) -->
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; margin-top: 10px;">
-            <div style="font-size: 1.1rem; color: rgba(255,255,255,0.7); display: flex; gap: 8px; justify-content: center; width: 100%;">
-              <span style="color: rgba(255,255,255,0.6); font-weight: 600;">Transaction ID:</span>
-              <span id="payment-txid" style="color: #a855f7; font-weight: bold; letter-spacing: 1px;">-----</span>
+          <!-- Mockup Video & Delivery Notice -->
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; margin-top: 14px;">
+            
+            <!-- Duplicated 3rd Layer Mockup Shape with Video -->
+            <div class="payment-mockup-shape-container" style="display: flex; justify-content: center; align-items: center; width: 100%; margin: 6px 0 2px 0;">
+              <div style="width: 180px; height: 180px; border-radius: 28px; background: linear-gradient(135deg, rgba(26, 38, 64, 0.95), rgba(13, 20, 36, 0.95)); border: 1px solid rgba(59, 130, 246, 0.4); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2); padding: 10px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                <div style="width: 100%; height: 100%; border-radius: 20px; overflow: hidden; background: #120422; display: flex; align-items: center; justify-content: center;">
+                  <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px;">
+                    <source src="https://www.dropbox.com/scl/fi/9ofejr2lfq5bndn5e52cv/layers_to_pindown.io_1783454097.mp4?rlkey=n873hitsnj5tgvybvf9bdp7cm&st=jja33020&dl=1" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
             </div>
 
-            <div style="font-size: 1.1rem; color: rgba(255,255,255,0.7); display: flex; gap: 8px; justify-content: center; width: 100%;">
-              <span style="color: rgba(255,255,255,0.6); font-weight: 600;">Delivery Email:</span>
-              <span id="payment-email" style="color: #ffffff; font-weight: bold;">you@example.com</span>
+            <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 12px 18px; width: 100%; box-sizing: border-box; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <span style="color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; font-weight: 500; line-height: 1.4;">Once we receive the payment, we will send your item code to your email.</span>
             </div>
           </div>
         </div>
@@ -319,7 +364,7 @@
           <div class="checkout-input-group" style="margin-bottom: 16px;">
             <label id="wallet-label" class="checkout-input-label" style="color:rgba(255,255,255,0.8); font-weight:bold; margin-bottom:8px; display:block;">USDT (TRC-20) Wallet Address</label>
             <div style="display:flex; gap:10px;">
-              <input type="text" id="wallet-address" class="checkout-text-input" value="TY1xP8G6uA9zH8GfM8D9vT8C8sP7W8q4k9" readonly style="flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#ffffff; font-family:monospace; font-size:0.95rem; text-align:center; border-radius:12px; padding:12px;">
+              <input type="text" id="wallet-address" class="checkout-text-input" value="TY1xP8G6uA9zH8GfM8D9vT8C8sP7W8q4k9" readonly style="flex:1; background:rgba(0,0,0,0.3); border:1px solid #3b82f6; box-shadow:0 0 15px rgba(59,130,246,0.35); color:#ffffff; font-family:monospace; font-size:0.95rem; text-align:center; border-radius:12px; padding:12px;">
               <button onclick="copyWalletAddress()" id="copy-btn" class="checkout-pay-btn" style="width:auto; padding:0 20px; border-radius:12px; font-weight:bold; cursor:pointer; background:#3b82f6; border:none; color:#ffffff; font-family:'Montserrat',sans-serif;">COPY</button>
             </div>
           </div>
@@ -331,7 +376,7 @@
               <img id="amount-crypto-icon" src="https://www.dropbox.com/scl/fi/lda0gtitqmw4se6z2qbmw/0xdac17f958d2ee523a2206206994597c13d831ec7.png?rlkey=73u4e78hzm17uli1hbc11xz88&st=kfhfmdo7&dl=1" alt="USDT" style="width: 18px; height: 18px; object-fit: contain;">
             </label>
             <div style="display:flex; gap:10px;">
-              <input type="text" id="payment-amount-val" class="checkout-text-input" value="3.00" readonly style="flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#ffffff; font-family:monospace; font-size:0.95rem; text-align:center; border-radius:12px; padding:12px;">
+              <input type="text" id="payment-amount-val" class="checkout-text-input" value="3.00" readonly style="flex:1; background:rgba(0,0,0,0.3); border:1px solid #3b82f6; box-shadow:0 0 15px rgba(59,130,246,0.35); color:#ffffff; font-family:monospace; font-size:0.95rem; text-align:center; border-radius:12px; padding:12px;">
               <button onclick="copyPaymentAmount()" id="copy-amount-btn" class="checkout-pay-btn" style="width:auto; padding:0 20px; border-radius:12px; font-weight:bold; cursor:pointer; background:#3b82f6; border:none; color:#ffffff; font-family:'Montserrat',sans-serif;">COPY</button>
             </div>
           </div>
@@ -345,17 +390,16 @@
           </div>
 
           <!-- Instructions & Confirmation Button -->
-          <div class="checkout-policy-alert" style="margin-bottom: 24px; padding: 16px; border-radius:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); display:flex; flex-direction:column; gap:12px;">
-            <div style="display:flex; gap:12px; align-items:center;">
-              <i data-lucide="alert-triangle" style="color:#ef4444; flex-shrink:0; width:20px; height:20px;"></i>
-              <span style="font-size:0.85rem; color:rgba(255,255,255,0.9); line-height:1.4; font-weight:bold;">Please send exactly the payment amount. Once sent, click 'I HAVE PAID' to send the transaction details/receipt to our support bot.</span>
-            </div>
-            <div style="display:flex; gap:12px; align-items:center; border-top: 1px solid rgba(239,68,68,0.15); padding-top: 10px;">
-              <i data-lucide="info" style="color:#f59e0b; flex-shrink:0; width:20px; height:20px;"></i>
-              <span style="font-size:0.8rem; color:rgba(255,255,255,0.7); line-height:1.4; font-style:italic;">
-                You might need to pay gas fees so be careful, maybe your crypto wallet needs a fee for the transaction, so be careful when you send.
-              </span>
-            </div>
+          <div class="checkout-policy-alert" style="margin-bottom: 12px; padding: 16px; border-radius:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); display:flex; align-items:center; gap:12px;">
+            <i data-lucide="alert-triangle" style="color:#ef4444; flex-shrink:0; width:20px; height:20px;"></i>
+            <span style="font-size:0.85rem; color:rgba(255,255,255,0.9); line-height:1.4; font-weight:bold;">Please send the exact payment amount. Once sent, click 'I CONFIRM THAT I SENT THE EXACT AMOUNT', then enter your transaction TXID / Hash to send the receipt details to our support team.</span>
+          </div>
+
+          <div class="checkout-policy-info" style="margin-bottom: 24px; padding: 16px; border-radius:12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); display:flex; align-items:center; gap:12px;">
+            <i data-lucide="info" style="color:#f59e0b; flex-shrink:0; width:20px; height:20px;"></i>
+            <span style="font-size:0.8rem; color:rgba(255,255,255,0.7); line-height:1.4; font-style:italic;">
+              You might need to pay gas fees so be careful, maybe your crypto wallet needs a fee for the transaction, so be careful when you send.
+            </span>
           </div>
 
           <button onclick="confirmCryptoPayment()" class="checkout-pay-btn btn-whatsapp-green" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:16px 20px; border-radius:16px; font-weight:bold; font-size:1.1rem; cursor:pointer; background:#25d366; border:none; color:#ffffff; transition:all 0.3s ease;">
@@ -413,8 +457,8 @@
               <a href="mailto:support@destinyrewards.com" class="blue-layer-nav-link">EMAIL US</a>
               <a href="challenge.html" class="blue-layer-nav-link">CHALLENGE</a>
               <a href="buy.html" class="blue-layer-nav-link">BUY</a>
-              <a href="index.html#second-layer" class="blue-layer-nav-link">BID</a>
-              <a href="index.html#second-layer" class="blue-layer-nav-link">FOR FREE</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'bid'); return false;">BID</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'free'); return false;">FOR FREE</a>
             </div>
           </div>
           <div class="blue-layer-rights">
@@ -447,11 +491,23 @@
       const titleEl = document.getElementById("payment-prod-title");
       const priceEl = document.getElementById("payment-prod-price");
       const imgEl = document.getElementById("payment-prod-img");
+      const orderDetailsHeaderEl = document.getElementById("payment-order-details-header");
 
       if (emailEl) emailEl.textContent = email;
       if (titleEl) titleEl.textContent = title;
       if (priceEl) priceEl.textContent = price;
       if (imgEl && img) imgEl.setAttribute("src", img);
+
+      // Make ORDER DETAILS header Gold ONLY for 96X items
+      if (orderDetailsHeaderEl) {
+        if (title.toLowerCase().includes("96x")) {
+          orderDetailsHeaderEl.style.color = "#facc15";
+          orderDetailsHeaderEl.style.textShadow = "0 0 12px rgba(250, 204, 21, 0.4)";
+        } else {
+          orderDetailsHeaderEl.style.color = "#60a5fa";
+          orderDetailsHeaderEl.style.textShadow = "none";
+        }
+      }
 
       // Dynamic Cryptocurrency & Network Details Loading
       const selectedCrypto = localStorage.getItem("checkout_crypto") || "USDT";
@@ -491,33 +547,106 @@
         window.history.replaceState({ path: newUrl }, '', newUrl);
       }
 
-      let address = "TY1xP8G6uA9zH8GfM8D9vT8C8sP7W8q4k9";
+      const USDT_BEP20_WALLETS = [
+        {
+          address: "0xb8512439c19bae4bddffacb100ab5eaccdc20498",
+          qr: "https://www.dropbox.com/scl/fi/ttnh76ajz36t4bui84t6k/USDT-B2P-ADDRESS1-QR.png?rlkey=eqhq7165a6lgvkzighxp9eej1&st=n209yiq6&dl=1"
+        },
+        {
+          address: "0xbb2f78add4ec6d58c9cda97e18e6320586e8c4f6",
+          qr: "https://www.dropbox.com/scl/fi/2psgyvm201rllgt4m5pms/USDT-B2P-ADDRESS-2-QR.png?rlkey=aawk8xdyqpwgkcmgz3n2buco0&st=rut92knd&dl=1"
+        },
+        {
+          address: "0x7586ef327a687372b04219ebb0200217de292ede",
+          qr: "https://www.dropbox.com/scl/fi/v22g5zkfgd4ljetl9uqxc/USDT-B2P-ADDRESS-3-QR.png?rlkey=avv6gznd77a9sv7lcyd4854q1&st=lrxo8uc7&dl=1"
+        }
+      ];
+
+      const USDT_APT_WALLET = {
+        address: "0xa131931bbd34922ff36911b72b232b5a50f86d545ed9d0a06f18615d4e89dda4",
+        qr: "https://www.dropbox.com/scl/fi/sjzwoml60433v51f5k8rz/USDT-APTOS-1-QR.png?rlkey=euxwv3mxl5ndwbvx95gs56u4b&st=hdeyptnf&dl=1"
+      };
+
+      const USDT_TRC20_WALLETS = [
+        {
+          address: "TX7Ad5D3yydmeCSYtCbfNmgERYgoeaiA56",
+          qr: "https://www.dropbox.com/scl/fi/o47y6or6hdiip421pkqk2/USDT-TRC20-ADDRESS-1-QR.png?rlkey=p175defe9irbp79893vhkpyp1&st=cienxb35&dl=1"
+        }
+      ];
+
+      const USDC_SOL_WALLETS = [
+        {
+          address: "FcZ4RMDSLQTkb7EYmwTJkk9ewsHn3gnAVppW92mSj6aC",
+          qr: "https://www.dropbox.com/scl/fi/piwkvjkk3paz00dzibs0b/USDC-SOLANA-ADRESS-1-QR.png?rlkey=2aydcauje1wkuibc4e2f6qbza&st=9tvuc6mg&dl=1"
+        },
+        {
+          address: "DD6ZsZYASVmiev1e1MUgXfFLkJXDyAEmAFUWVu6gkX9r",
+          qr: "https://www.dropbox.com/scl/fi/0z1b6h52354rie2zpz8rv/USDC-SOLANA-ADRESS-2-QR.png?rlkey=i3kcso2kz3ywka2jn72gc8ppe&st=s7peaj9h&dl=1"
+        }
+      ];
+
+      const USDC_SUI_WALLETS = [
+        {
+          address: "0x4c00fa4571613f2f287bc26c18fbd3255b7d706741367c9658468944b3992827",
+          qr: "https://www.dropbox.com/scl/fi/i9a7vcnsra9so5aze72xq/USDC-SUI-ADRESS-1-QR.png?rlkey=8yje7vvjyauiglgd5f0riy7rp&st=7pa3g4q1&dl=1"
+        }
+      ];
+
+      const USDC_BEP20_WALLETS = [
+        {
+          address: "0x7586ef327a687372b04219ebb0200217de292ede",
+          qr: "https://www.dropbox.com/scl/fi/t288lwkm4vyjn7cipf6wb/USDC-B2P-ADRESS-1-QR.png?rlkey=e8g504zl3wqiq0hvueah88s8g&st=fagagnn3&dl=1"
+        },
+        {
+          address: "0xbb2f78add4ec6d58c9cda97e18e6320586e8c4f6",
+          qr: "https://www.dropbox.com/scl/fi/c3ovobypma3azhktk4w9r/USDC-B2P-ADDRESS-2-QR.png?rlkey=58vxd4b1iyfxn3ki3pac8dzun&st=h55d149n&dl=1"
+        }
+      ];
+
+      let address = "TX7Ad5D3yydmeCSYtCbfNmgERYgoeaiA56";
       let label = "USDT (TRC-20) Wallet Address";
+      let customQrUrl = "";
+
+      let charSum = 0;
+      const idStr = txId || "";
+      for (let i = 0; i < idStr.length; i++) charSum += idStr.charCodeAt(i);
 
       if (selectedCrypto === "USDT") {
-        if (selectedNetwork === "APT") {
-          address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+        if (selectedNetwork === "BEP20") {
+          const walletObj = USDT_BEP20_WALLETS[charSum % USDT_BEP20_WALLETS.length];
+          address = walletObj.address;
+          customQrUrl = walletObj.qr;
+          label = "USDT (BEP-20 / B2P Chain) Wallet Address";
+        } else if (selectedNetwork === "APT") {
+          address = USDT_APT_WALLET.address;
+          customQrUrl = USDT_APT_WALLET.qr;
           label = "USDT (Aptos Network) Wallet Address";
-        } else if (selectedNetwork === "BEP20") {
-          address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
-          label = "USDT (BEP-20) Wallet Address";
-        } else {
-          address = "TY1xP8G6uA9zH8GfM8D9vT8C8sP7W8q4k9";
+        } else { // TRC20
+          const walletObj = USDT_TRC20_WALLETS[charSum % USDT_TRC20_WALLETS.length];
+          address = walletObj.address;
+          customQrUrl = walletObj.qr;
           label = "USDT (TRC-20) Wallet Address";
         }
       } else if (selectedCrypto === "USDC") {
-        if (selectedNetwork === "SOL" || selectedNetwork === "Solana") {
-          address = "4k3DYwMw48Ph7Sru25Bgh2CJC146wN8M5G";
+        if (selectedNetwork === "BEP20") {
+          const walletObj = USDC_BEP20_WALLETS[charSum % USDC_BEP20_WALLETS.length];
+          address = walletObj.address;
+          customQrUrl = walletObj.qr;
+          label = "USDC (BEP-20 / B2P Chain) Wallet Address";
+        } else if (selectedNetwork === "SOL" || selectedNetwork === "Solana") {
+          const walletObj = USDC_SOL_WALLETS[charSum % USDC_SOL_WALLETS.length];
+          address = walletObj.address;
+          customQrUrl = walletObj.qr;
           label = "USDC (Solana Network) Wallet Address";
-        } else if (selectedNetwork === "BEP20") {
-          address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
-          label = "USDC (BEP-20) Wallet Address";
         } else if (selectedNetwork === "SUI") {
-          address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+          const walletObj = USDC_SUI_WALLETS[charSum % USDC_SUI_WALLETS.length];
+          address = walletObj.address;
+          customQrUrl = walletObj.qr;
           label = "USDC (Sui Network) Wallet Address";
         } else {
-          // Default fallback
-          address = "4k3DYwMw48Ph7Sru25Bgh2CJC146wN8M5G";
+          const walletObj = USDC_SOL_WALLETS[charSum % USDC_SOL_WALLETS.length];
+          address = walletObj.address;
+          customQrUrl = walletObj.qr;
           label = "USDC (Solana Network) Wallet Address";
         }
       }
@@ -525,7 +654,11 @@
       if (walletLabelEl) walletLabelEl.textContent = label;
       if (walletAddressEl) walletAddressEl.value = address;
       if (qrCodeImgEl) {
-        qrCodeImgEl.setAttribute("src", `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${address}`);
+        if (customQrUrl) {
+          qrCodeImgEl.setAttribute("src", customQrUrl);
+        } else {
+          qrCodeImgEl.setAttribute("src", `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${address}`);
+        }
       }
 
       // Populate Amount and Label dynamically
@@ -595,7 +728,6 @@
         if (timeLeft <= 0) {
           clearInterval(timerInterval);
           if (textEl) textEl.textContent = "EXPIRED";
-          alert("Your payment window has expired. Please try again.");
           window.location.href = "buy.html";
         } else {
           timeLeft--;
@@ -649,12 +781,46 @@
     }
 
     // 6. Confirm Payment Redirect
-    function confirmCryptoPayment() {
-      const txId = localStorage.getItem("payment_txid") || "";
-      const botUrl = txId ? `https://t.me/Destinyrewards_bot?start=${txId}` : "https://t.me/Destinyrewards_bot";
-      window.open(botUrl, "_blank");
+    async function confirmCryptoPayment() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const txId = urlParams.get("txid") || localStorage.getItem("payment_txid") || "";
+      const email = urlParams.get("email") || localStorage.getItem("checkout_email") || "you@example.com";
+      const title = urlParams.get("title") || localStorage.getItem("checkout_title") || "Lucky Premium Game";
+      
+      const amountValInput = document.getElementById("payment-amount-val");
+      const rawPrice = amountValInput ? amountValInput.value : (localStorage.getItem("checkout_price") || "6$");
+      const numericAmount = parseFloat(rawPrice.replace(/[^0-9.]/g, "")) || 6;
+
+      const selectedCrypto = localStorage.getItem("checkout_crypto") || "USDT";
+      const selectedNetwork = localStorage.getItem("checkout_network") || "TRC20";
+      const walletAddressInput = document.getElementById("wallet-address");
+      const walletAddr = walletAddressInput ? walletAddressInput.value : "";
+
+      // Ensure order status is updated to "pending" with exact amount in Firestore orders collection
+      if (txId && window.db && window.doc && window.setDoc) {
+        try {
+          const orderRef = window.doc(window.db, "orders", txId);
+          await window.setDoc(orderRef, {
+            "transaction id": txId,
+            "delivered email": email,
+            product: title,
+            amount: numericAmount,
+            currency: selectedCrypto,
+            network: selectedNetwork,
+            wallet: walletAddr,
+            orderStatus: "pending",
+            time: new Date().toISOString()
+          }, { merge: true });
+          console.log("Firestore order set to pending with amount:", numericAmount);
+        } catch (err) {
+          console.warn("Notice: Order status save warning:", err);
+        }
+      }
+
+      window.location.href = `waiting.html?txid=${encodeURIComponent(txId)}&email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}&orderStatus=pending`;
     }
   </script>
 </body>
 
 </html>
+

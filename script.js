@@ -1497,15 +1497,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Liquid Glass Side Message Panel Logic
-  const sidePanel = document.getElementById('side-message-panel');
-  const backdrop = document.getElementById('modal-backdrop');
+  let sidePanel = document.getElementById('side-message-panel');
+  let backdrop = document.getElementById('modal-backdrop');
+
+  // If they don't exist on this page, create them dynamically!
+  if (!sidePanel) {
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop';
+      backdrop.id = 'modal-backdrop';
+      document.body.appendChild(backdrop);
+    }
+    sidePanel = document.createElement('div');
+    sidePanel.className = 'side-message-panel';
+    sidePanel.id = 'side-message-panel';
+    sidePanel.innerHTML = `
+      <button class="side-message-close" id="close-side-message">&times;</button>
+      <img src="images/bid_unavailable.png" alt="Bid Section Coming Soon" class="modal-image-only">
+      <a href="https://t.me/Destinyrewards_bot" target="_blank" class="modal-telegram-overlay-link" aria-label="Join Telegram"></a>
+    `;
+    document.body.appendChild(sidePanel);
+  }
+
   const closeBtn = document.getElementById('close-side-message');
   const bidLink = document.getElementById('nav-bid-link');
   const freeLink = document.getElementById('nav-free-link');
   let autoCloseTimer;
 
   const showSideMessage = (e, type = 'bid') => {
-    if (e) e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     
     // Dynamically update the image source and alt text inside the modal
     const modalImg = sidePanel ? sidePanel.querySelector('.modal-image-only') : null;
@@ -1530,17 +1550,33 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const closeSideMessage = (e) => {
-    if (e) e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     if (sidePanel) sidePanel.classList.remove('active');
     if (backdrop) backdrop.classList.remove('active');
     if (autoCloseTimer) clearTimeout(autoCloseTimer);
   };
+
+  // Expose globally so footer links can open it directly on any page
+  window.showSideMessage = showSideMessage;
 
   if (bidLink) bidLink.addEventListener('click', (e) => showSideMessage(e, 'bid'));
   if (freeLink) freeLink.addEventListener('click', (e) => showSideMessage(e, 'free'));
 
   if (closeBtn) closeBtn.addEventListener('click', closeSideMessage);
   if (backdrop) backdrop.addEventListener('click', closeSideMessage);
+
+  // Check URL query parameters to show the modal automatically on index page load
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const showModalType = urlParams.get('showModal');
+    if (showModalType === 'bid' || showModalType === 'free') {
+      setTimeout(() => {
+        showSideMessage(null, showModalType);
+      }, 500);
+    }
+  } catch (err) {
+    console.error("Error reading showModal param:", err);
+  }
 
   // Format price inputs to .00 on blur
   const priceFrom = document.getElementById('price-from');
@@ -1707,6 +1743,32 @@ function handleLoggedInUser(user) {
     })
     .catch(err => {
       console.warn("Database lookup resolved empty/timed out. Generating user profile:", err);
+      
+      // Check if user already has profile details in localStorage on this device
+      const localName = localStorage.getItem("profileName");
+      const localId = localStorage.getItem("profileId") ? localStorage.getItem("profileId").replace("ID: ", "") : null;
+      
+      if (localName && localId) {
+        console.log("Database lookup failed/timed out, but found existing local profile. Skipping setup gate.");
+        return { isNew: false, id: localId, dbName: localName, gName: name, dbPhoto: photoURL };
+      }
+      
+      // If it was a database connection error or timeout and NOT a "user not found" error,
+      // we also shouldn't show the setup gate to prevent annoying existing users.
+      const isUserNotFound = err && err.message && (
+        err.message.includes("No Firestore user ID") || 
+        err.message.includes("No RTDB user ID") || 
+        err.message.includes("RTDB not available") || 
+        err.message.includes("No databases available")
+      );
+                             
+      if (!isUserNotFound) {
+        console.log("Database connection error or timeout. Skipping setup gate to prevent showing it to existing users.");
+        const fallbackId = Math.floor(10000 + Math.random() * 90000);
+        return { isNew: false, id: fallbackId, dbName: name, gName: name, dbPhoto: photoURL };
+      }
+
+      // Truly a new user (no record in database and database query completed successfully returning empty)
       const newRandomId = Math.floor(10000 + Math.random() * 90000);
       return { isNew: true, id: newRandomId, dbName: name, gName: name, dbPhoto: photoURL };
     })
@@ -1714,12 +1776,17 @@ function handleLoggedInUser(user) {
       if (signInBtn) {
         signInBtn.disabled = false;
         signInBtn.style.opacity = "1";
-        const btnText = signInBtn.querySelector(".google-btn-text");
-        if (btnText) btnText.textContent = "Sign up with Google";
+        const btnText = signInBtn.querySelector(".google-btn-text") || signInBtn.querySelector("span");
+        if (btnText) {
+          btnText.textContent = signInBtn.id === "buy-google-signin-btn" ? "Sign in with Google" : "Sign up with Google";
+        }
       }
 
-      // Auto-complete login immediately so user is signed in with Google seamlessly on all pages
-      completeLogin(user, result.id, result.dbName || name, result.gName || name, result.dbPhoto || photoURL);
+      if (result.isNew) {
+        showProfileSetupGate(user, result.id, result.gName || name, result.dbPhoto || photoURL);
+      } else {
+        completeLogin(user, result.id, result.dbName || name, result.gName || name, result.dbPhoto || photoURL);
+      }
     })
     .catch(err => {
       console.error("Error completing user login:", err);
@@ -1730,8 +1797,36 @@ function handleLoggedInUser(user) {
 }
 
 function showProfileSetupGate(user, finalId, defaultName, defaultPhotoURL) {
+  let profileSetupGate = document.getElementById("profile-setup-gate");
+  if (!profileSetupGate) {
+    profileSetupGate = document.createElement("div");
+    profileSetupGate.className = "signup-gate-overlay";
+    profileSetupGate.id = "profile-setup-gate";
+    profileSetupGate.style.display = "none";
+    profileSetupGate.innerHTML = `
+        <div class="signup-gate-content profile-setup-content">
+          <h2 class="signup-gate-title">COMPLETE YOUR PROFILE</h2>
+          <p class="signup-gate-desc profile-desc">Upload a profile picture and choose a username to unlock your profile.</p>
+          
+          <div class="setup-avatar-upload" id="setup-avatar-upload" title="Click to upload profile picture">
+            <img src="" alt="" id="setup-avatar-img" style="display: none;">
+            <svg id="setup-avatar-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="grey" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </div>
+          <input type="file" id="setup-avatar-input" style="display: none;" accept="image/*">
+          
+          <input type="text" id="setup-username-input" class="setup-username-input" placeholder="Enter Username" autocomplete="off" maxlength="20">
+          <span id="setup-username-error" class="setup-username-error" style="display: none;">Username is already taken!</span>
+          
+          <button class="setup-continue-btn" id="setup-continue-btn">CONTINUE</button>
+        </div>
+    `;
+    document.body.appendChild(profileSetupGate);
+  }
+
   const signupGate = document.getElementById("signup-gate");
-  const profileSetupGate = document.getElementById("profile-setup-gate");
   const usernameInput = document.getElementById("setup-username-input");
   const continueBtn = document.getElementById("setup-continue-btn");
   const avatarImg = document.getElementById("setup-avatar-img");
@@ -1838,7 +1933,7 @@ function showProfileSetupGate(user, finalId, defaultName, defaultPhotoURL) {
                 errorSpan.style.display = "block";
               }
               newContinueBtn.disabled = false;
-              newContinueBtn.textContent = "CONTINUE TO WHEEL";
+              newContinueBtn.textContent = "CONTINUE";
             } else {
               // Username available or already ours
               if (errorSpan) errorSpan.style.display = "none";
@@ -1860,7 +1955,7 @@ function showProfileSetupGate(user, finalId, defaultName, defaultPhotoURL) {
                     errorSpan.style.display = "block";
                   }
                   newContinueBtn.disabled = false;
-                  newContinueBtn.textContent = "CONTINUE TO WHEEL";
+                  newContinueBtn.textContent = "CONTINUE";
                 });
             }
           })
@@ -1871,7 +1966,7 @@ function showProfileSetupGate(user, finalId, defaultName, defaultPhotoURL) {
               errorSpan.style.display = "block";
             }
             newContinueBtn.disabled = false;
-            newContinueBtn.textContent = "CONTINUE TO WHEEL";
+            newContinueBtn.textContent = "CONTINUE";
           });
       } else {
         // Fallback if Firestore not loaded
@@ -1952,7 +2047,14 @@ function completeLogin(user, finalId, chosenName, googleName, chosenPhotoURL) {
   if (profileSetupGate) profileSetupGate.style.display = "none";
 
   initProfileWidget();
-  triggerConfetti();
+  
+  // Only trigger celebration confetti on the challenge page
+  const isChallengePage = window.location.pathname.includes("challenge.html") || 
+                          window.location.pathname.endsWith("/challenge") || 
+                          window.location.pathname.includes("/challenge.html");
+  if (isChallengePage) {
+    triggerConfetti();
+  }
 }
 
 function showGoogleLogin() {
@@ -2992,6 +3094,17 @@ function initCheckoutPage() {
     if (mainGrid) mainGrid.classList.add("theme-gold-borders");
   }
 
+  // Dynamically display the game photos album section if the product is a game version
+  const photosSection = document.getElementById("checkout-game-photos-section");
+  if (photosSection) {
+    const lowerTitle = (title || "").toLowerCase();
+    if (lowerTitle.includes("premium") || lowerTitle.includes("raiders") || lowerTitle.includes("expedition") || lowerTitle.includes("kingdom") || lowerTitle.includes("96x")) {
+      photosSection.style.display = "block";
+    } else {
+      photosSection.style.display = "none";
+    }
+  }
+
   // Wire up checkout form submissions
   const checkoutForm = document.getElementById("checkout-form");
   const binanceInput = document.getElementById("checkout-binance-id");
@@ -3139,7 +3252,7 @@ function initCheckoutPage() {
                 amount: amountVal,
                 currency: selectedCrypto,
                 network: selectedNetwork,
-                status: "pending",
+                orderStatus: "pending",
                 wallet: walletAddr,
                 "transaction id": txId,
                 time: new Date().toISOString()
@@ -3170,7 +3283,7 @@ function initCheckoutPage() {
                 amount: amountVal,
                 currency: "USD",
                 network: "Binance Pay",
-                status: "pending",
+                orderStatus: "pending",
                 wallet: binanceId,
                 "transaction id": txId,
                 time: new Date().toISOString()
@@ -3210,7 +3323,7 @@ function initCheckoutPage() {
             });
           } else {
             firestorePromise.then(() => {
-              alert(detailsMsg);
+              window.location.href = "https://wa.me/message/YTRSS2WSIZQVI1";
             }).catch(err => {
               console.log("Checkout halted due to database write failure.", err);
             });
@@ -3238,7 +3351,7 @@ function initCheckoutPage() {
         if (binanceContainer) binanceContainer.style.display = "flex";
         if (binanceInput) binanceInput.required = true;
         if (payBtn) {
-          payBtn.innerHTML = `<img src="https://www.dropbox.com/scl/fi/1z4c3wqn8an7shaeku47w/telegram-white-icon.webp?rlkey=m91wtlv8kn9u0yotbncq1mrhn&st=eqd5g0tj&dl=1" class="checkout-btn-icon" alt="Telegram"> CONTACT US`;
+          payBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="checkout-btn-icon" style="display:inline-block; vertical-align:middle; margin-right:8px; flex-shrink:0;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg> CONTACT US`;
           payBtn.classList.add("btn-whatsapp-green");
         }
       } else {
@@ -3450,5 +3563,875 @@ function initDebugPanel() {
   `;
 }
 
+
+
+// =====================================================================
+// LIVE USERNAME AVAILABILITY CHECK (fires as user types in setup modal)
+// =====================================================================
+(function initLiveUsernameCheck() {
+  // Wait for DOM ready then hook into the input
+  function hookInput() {
+    const input = document.getElementById("setup-username-input");
+    const errorSpan = document.getElementById("setup-username-error");
+    if (!input) return;
+
+    let debounceTimer = null;
+
+    input.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      const val = input.value.trim();
+
+      // Clear feedback immediately on new keystroke
+      if (errorSpan) {
+        errorSpan.style.display = "none";
+        errorSpan.textContent = "";
+        errorSpan.style.color = "#ff5555";
+      }
+
+      if (!val || val.length < 3) return;
+
+      const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+      if (!usernameRegex.test(val)) return;
+
+      // Show checking indicator
+      if (errorSpan) {
+        errorSpan.textContent = "Checking availability...";
+        errorSpan.style.color = "#6b8aff";
+        errorSpan.style.display = "block";
+      }
+
+      debounceTimer = setTimeout(() => {
+        if (!window.db || !window.doc || !window.getDoc) return;
+        const usernameLower = val.toLowerCase();
+        const myId = localStorage.getItem("profileId") || "";
+
+        window.getDoc(window.doc(window.db, "usernames", usernameLower))
+          .then(docSnap => {
+            const currentInput = document.getElementById("setup-username-input");
+            if (!currentInput || currentInput.value.trim().toLowerCase() !== usernameLower) return;
+            const errEl = document.getElementById("setup-username-error");
+            if (!errEl) return;
+
+            if (docSnap.exists() && docSnap.data().userId !== myId) {
+              errEl.textContent = "❌ Username already taken";
+              errEl.style.color = "#ff5555";
+              errEl.style.display = "block";
+            } else {
+              errEl.textContent = "✅ Username is available!";
+              errEl.style.color = "#25d366";
+              errEl.style.display = "block";
+            }
+          })
+          .catch(() => {
+            // Silent fail on check
+            const errEl = document.getElementById("setup-username-error");
+            if (errEl) errEl.style.display = "none";
+          });
+      }, 500); // 500ms debounce
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", hookInput);
+  } else {
+    hookInput();
+    // Also re-hook when the profile gate opens (it may be injected later)
+    const observer = new MutationObserver(() => {
+      const input = document.getElementById("setup-username-input");
+      if (input && !input.dataset.liveChecked) {
+        input.dataset.liveChecked = "1";
+        hookInput();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+})();
+
+
+// =====================================================================
+// SIMILAR PRODUCTS CAROUSEL (populates #similar-carousel-track)
+// =====================================================================
+(function initSimilarProducts() {
+  const SIMILAR_PRODUCTS = [
+    {
+      title: "Lucky Premium 96X Global Steam Game",
+      price: "250$",
+      img: "https://www.dropbox.com/scl/fi/27pxn9krdm0mg99egbrf2/ChatGPT-Image-2-juil.-2026-17_25_59.png?rlkey=c70vl6vvit6h71s7ifwextro6&st=zwzs1m7l&dl=1",
+      badges: [
+        { text: "Global", class: "badge-gold-translucent" },
+        { text: "Steam Key", class: "badge-gold-translucent" },
+        { text: "13.1% Discount", class: "badge-green" },
+        { text: "1 Left", class: "badge-red" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Premium Game 1X Edition",
+      price: "3$",
+      img: "https://www.dropbox.com/scl/fi/5nbb9o69m77rk5v1q1u2t/ChatGPT-Image-2-juil.-2026-21_58_47.png?rlkey=69amhmy7w6kr1qfrfvp09k4x4&st=pweg7s7t&e=1&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 75", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Premium Game 2X Edition",
+      price: "6$",
+      img: "https://www.dropbox.com/scl/fi/hq7cbrazuh0z92rm0bvar/ChatGPT-Image-2-juil.-2026-22_01_25.png?rlkey=u7n22rspxw8wzy5qc881cnd1t&st=d36q3tmp&e=1&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 37", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Premium Game 3X Edition",
+      price: "9$",
+      img: "https://www.dropbox.com/scl/fi/gogkf1r8ob180cymp6qb3/ChatGPT-Image-2-juil.-2026-22_09_13.png?rlkey=wxe0w0d768jifw648zkdctdmm&st=rvcbli3b&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 25", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Premium Game 5X Edition",
+      price: "15$",
+      img: "https://www.dropbox.com/scl/fi/uxhfltml808wmctoats2d/ChatGPT-Image-2-juil.-2026-22_12_42.png?rlkey=t3xw8z0leqtudviq7t1bxg40b&st=ixin1mmi&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 15", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Premium Game 10X Edition",
+      price: "30$",
+      img: "https://www.dropbox.com/scl/fi/zneyfj0m59tfn41ma9gvd/ChatGPT-Image-Jul-2-2026-11_35_54-PM.png?rlkey=4yzjodyvavjyesubhr1l3794d&st=yoi1m6f6&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 7", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Raiders Game 1X",
+      price: "3$",
+      img: "https://www.dropbox.com/scl/fi/rldkidinhmj4dhsgg7pz0/ChatGPT-Image-3-juil.-2026-11_47_31.png?rlkey=enox6cwwyn7m2g6wbvjdcnc0w&st=46c9j8j9&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 2", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Raiders Game 2X",
+      price: "6$",
+      img: "https://www.dropbox.com/scl/fi/1w8vwqgkptipdzy4x8hfa/ChatGPT-Image-3-juil.-2026-11_50_28.png?rlkey=zo8z67s51333cvj9j9yl4zh31&st=asws56sb&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 1", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Expedition Game 1X",
+      price: "3$",
+      img: "https://www.dropbox.com/scl/fi/v3o8m8owe9833orjoyhs9/EX-X1.png?rlkey=fs5lqr3431eysn4q1qb5s0b0b&st=sf5wdwzh&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 4", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Expedition Game 2X",
+      price: "6$",
+      img: "https://www.dropbox.com/scl/fi/c86vmevgk30upcpqe03d3/EX-X2.png?rlkey=65ok6upzyp4rf9gpq8b99so3k&st=7ayfn19m&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 2", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Expedition Game 4X",
+      price: "12$",
+      img: "https://www.dropbox.com/scl/fi/t5e3uf4nofmz95ad70vvd/ChatGPT-Image-3-juil.-2026-03_34_14.png?rlkey=krywqss94vbugfnb7gnepfpla&st=n7451yck&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 1", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Kingdom Game 1X",
+      price: "3$",
+      img: "https://www.dropbox.com/scl/fi/lo9btvpa2ibkm3df6oc1e/ChatGPT-Image-3-juil.-2026-11_04_18.png?rlkey=drar8uzbhbw5pnjauf552fn09&st=1p1avtgb&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 15", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Kingdom Game 3X",
+      price: "9$",
+      img: "https://www.dropbox.com/scl/fi/imldxys8mrea1h8n6hyyp/CRI-3X.png?rlkey=72sv5j0vnf5d8zlhdu7kd0wyx&st=vqvlyna0&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 5", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Kingdom Game 5X",
+      price: "15$",
+      img: "https://www.dropbox.com/scl/fi/1qh6bos60prtutuj72ox9/CRI-5X.png?rlkey=f042edoqg4rx471rru9psqtm8&st=w8vw2wzn&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 3", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Kingdom Game 10X",
+      price: "30$",
+      img: "https://www.dropbox.com/scl/fi/nwsgzh9nhu7ri7jmcfdav/CRI-10X.png?rlkey=kf7g5m555d2yqotxic5xby6hf&st=kumdu80u&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 1", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    },
+    {
+      title: "Lucky Kingdom Game 15X",
+      price: "45$",
+      img: "https://www.dropbox.com/scl/fi/5zbwtsxnpmjkot4j7me0e/CRI-15X.png?rlkey=jcwpwm8e5yjz2uj42mbxgkp54&st=k3vv3tww&dl=1",
+      badges: [
+        { text: "Global", class: "badge-blue-translucent" },
+        { text: "Steam Key", class: "badge-blue-translucent" },
+        { text: "Stock: 1", class: "badge-blue-translucent" }
+      ],
+      href: "buy.html"
+    }
+  ];
+
+  window.selectSimilarProduct = function(title) {
+    const p = SIMILAR_PRODUCTS.find(item => item.title === title);
+    if (!p) return;
+
+    const badgesHTML = p.badges.map(b => `<span class="buy-product-badge ${b.class}">${b.text}</span>`).join("");
+
+    localStorage.setItem("checkout_title", p.title);
+    localStorage.setItem("checkout_img", p.img);
+    localStorage.setItem("checkout_price", p.price);
+    localStorage.setItem("checkout_badges", badgesHTML);
+
+    const params = new URLSearchParams({
+      title: p.title,
+      img: p.img,
+      price: p.price
+    });
+    window.location.href = `checkout.html?${params.toString()}`;
+  };
+
+  let autoScrollFrame = null;
+  let isPaused = false;
+  let isDragging = false;
+  let startX = 0;
+  let scrollLeftStart = 0;
+
+  function renderSimilarProducts() {
+    const track = document.getElementById("similar-carousel-track");
+    if (!track) return;
+
+    // Get current product title to exclude it if needed
+    const currentTitle = (localStorage.getItem("checkout_title") || "").toLowerCase();
+    const filtered = SIMILAR_PRODUCTS.filter(p => p.title.toLowerCase() !== currentTitle);
+    const productList = filtered.length > 0 ? filtered : SIMILAR_PRODUCTS;
+
+    // Duplicate list so infinite loop scrolling has a seamless reset
+    const doubleList = [...productList, ...productList];
+
+    track.innerHTML = doubleList.map(p => `
+      <div class="similar-glass-card" onclick="window.selectSimilarProduct(\`${p.title.replace(/`/g, "\\`").replace(/'/g, "\\'")}\`)">
+        <div class="similar-glass-glow"></div>
+        <div class="similar-card-thumb-container">
+          <img src="${p.img}" alt="${p.title}" class="similar-card-thumb" referrerpolicy="no-referrer" onerror="this.src='images/product_placeholder.png'">
+        </div>
+        <div class="similar-card-body">
+          <div class="similar-card-title">${p.title}</div>
+          <div class="similar-card-badges">
+            ${p.badges.map(b => `<span class="buy-product-badge ${b.class}">${b.text}</span>`).join("")}
+          </div>
+          <div class="similar-card-footer">
+            <span class="similar-card-price">${p.price}</span>
+            <button class="similar-buy-now-btn">BUY NOW</button>
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    // Continuous smooth auto-scrolling right-to-left
+    if (autoScrollFrame) cancelAnimationFrame(autoScrollFrame);
+
+    const speed = 0.8; // px per frame
+    function step() {
+      if (!isPaused && !isDragging && track) {
+        track.scrollLeft += speed;
+        const halfWidth = track.scrollWidth / 2;
+        if (halfWidth > 0 && track.scrollLeft >= halfWidth) {
+          track.scrollLeft -= halfWidth;
+        }
+      }
+      autoScrollFrame = requestAnimationFrame(step);
+    }
+    autoScrollFrame = requestAnimationFrame(step);
+
+    // Pause on hover
+    const container = document.getElementById("similar-products-section") || track;
+    container.addEventListener("mouseenter", () => { isPaused = true; });
+    container.addEventListener("mouseleave", () => { isPaused = false; });
+
+    // Drag / Touch handlers
+    track.addEventListener("mousedown", e => {
+      isDragging = true;
+      track.classList.add("is-dragging");
+      startX = e.pageX - track.offsetLeft;
+      scrollLeftStart = track.scrollLeft;
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        track.classList.remove("is-dragging");
+      }
+    });
+
+    track.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - track.offsetLeft;
+      const walk = (x - startX);
+      track.scrollLeft = scrollLeftStart - walk;
+      
+      const halfWidth = track.scrollWidth / 2;
+      if (halfWidth > 0) {
+        if (track.scrollLeft >= halfWidth) track.scrollLeft -= halfWidth;
+        if (track.scrollLeft < 0) track.scrollLeft += halfWidth;
+      }
+    });
+
+    // Touch support for mobile
+    track.addEventListener("touchstart", e => {
+      isDragging = true;
+      startX = e.touches[0].pageX - track.offsetLeft;
+      scrollLeftStart = track.scrollLeft;
+    }, { passive: true });
+
+    track.addEventListener("touchend", () => {
+      isDragging = false;
+    });
+
+    track.addEventListener("touchmove", e => {
+      if (!isDragging) return;
+      const x = e.touches[0].pageX - track.offsetLeft;
+      const walk = (x - startX);
+      track.scrollLeft = scrollLeftStart - walk;
+      
+      const halfWidth = track.scrollWidth / 2;
+      if (halfWidth > 0) {
+        if (track.scrollLeft >= halfWidth) track.scrollLeft -= halfWidth;
+        if (track.scrollLeft < 0) track.scrollLeft += halfWidth;
+      }
+    }, { passive: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", renderSimilarProducts);
+  } else {
+    renderSimilarProducts();
+  }
+})();
+
+
+// =====================================================================
+// CUSTOMER REVIEWS SYSTEM (submit + display from Firestore)
+// =====================================================================
+(function initReviewSystem() {
+  function setupReviews() {
+    const reviewSection = document.getElementById("checkout-reviews-section");
+    if (!reviewSection) return;
+
+    const formContent = document.getElementById("review-form-content");
+    const loginPrompt = document.getElementById("review-login-prompt");
+    const submitBtn = document.getElementById("submit-review-btn");
+    const commentInput = document.getElementById("review-comment-input");
+    const photoInput = document.getElementById("review-photo-input");
+    const photoPreviews = document.getElementById("review-photo-previews");
+    const feedContainer = document.getElementById("reviews-feed-container");
+    const emptyState = document.getElementById("reviews-empty-state");
+    const countBadge = document.getElementById("reviews-count-badge");
+    const starBtns = document.querySelectorAll(".star-btn");
+
+    let selectedRating = 5;
+    let uploadedPhotos = []; // base64 strings
+
+    // Show form or login prompt based on auth state
+    function updateReviewFormVisibility() {
+      const isLoggedIn = localStorage.getItem("profileIsLoggedIn") === "true";
+      if (formContent) formContent.style.display = isLoggedIn ? "block" : "none";
+      if (loginPrompt) loginPrompt.style.display = isLoggedIn ? "none" : "flex";
+    }
+    updateReviewFormVisibility();
+
+    // Re-check on auth state change
+    window.addEventListener("storage", updateReviewFormVisibility);
+
+    // Star rating interaction
+    if (starBtns.length) {
+      starBtns.forEach(star => {
+        star.addEventListener("click", () => {
+          const val = parseInt(star.getAttribute("data-value"));
+          selectedRating = val;
+          starBtns.forEach((s, i) => {
+            s.classList.toggle("active", i < val);
+          });
+        });
+        star.addEventListener("mouseover", () => {
+          const val = parseInt(star.getAttribute("data-value"));
+          starBtns.forEach((s, i) => {
+            s.style.color = i < val ? "#fbbf24" : "";
+          });
+        });
+        star.addEventListener("mouseleave", () => {
+          starBtns.forEach(s => { s.style.color = ""; });
+        });
+      });
+    }
+
+    // Photo upload (max 2)
+    if (photoInput) {
+      photoInput.addEventListener("change", e => {
+        const files = Array.from(e.target.files).slice(0, 2 - uploadedPhotos.length);
+        files.forEach(file => {
+          if (!file.type.startsWith("image/")) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            if (uploadedPhotos.length >= 2) return;
+            uploadedPhotos.push(ev.target.result);
+            renderPhotoPreviews();
+          };
+          reader.readAsDataURL(file);
+        });
+        e.target.value = "";
+      });
+    }
+
+    function renderPhotoPreviews() {
+      if (!photoPreviews) return;
+      photoPreviews.innerHTML = uploadedPhotos.map((src, i) => `
+        <div style="position:relative;display:inline-block;margin:4px;">
+          <img src="${src}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.2);cursor:pointer;" onclick="openPhotoModal(this.src)" title="Click to view photo">
+          <button onclick="event.stopPropagation(); window._removeReviewPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#ff5555;border:none;border-radius:50%;width:18px;height:18px;color:#fff;font-size:11px;cursor:pointer;line-height:18px;text-align:center;z-index:2;" title="Remove photo">×</button>
+        </div>
+      `).join("");
+    }
+
+    window._removeReviewPhoto = (idx) => {
+      uploadedPhotos.splice(idx, 1);
+      renderPhotoPreviews();
+    };
+
+    window.deleteUserReview = function(reviewId) {
+      // 1. Instant Optimistic UI Removal (0ms Lag)
+      if (feedContainer) {
+        const cardToDelete = feedContainer.querySelector(`.review-card[data-id="${CSS.escape(reviewId)}"]`) || 
+                             feedContainer.querySelector(`.review-card[data-id="${reviewId}"]`);
+        if (cardToDelete) {
+          cardToDelete.style.transition = "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)";
+          cardToDelete.style.opacity = "0";
+          cardToDelete.style.transform = "scale(0.95)";
+          cardToDelete.style.maxHeight = "0px";
+          cardToDelete.style.paddingTop = "0px";
+          cardToDelete.style.paddingBottom = "0px";
+          cardToDelete.style.marginTop = "0px";
+          cardToDelete.style.marginBottom = "0px";
+          cardToDelete.style.overflow = "hidden";
+          setTimeout(() => {
+            cardToDelete.remove();
+            const remainingCards = feedContainer.querySelectorAll(".review-card");
+            if (countBadge) countBadge.textContent = `(${remainingCards.length})`;
+            if (remainingCards.length === 0 && emptyState) {
+              emptyState.style.display = "block";
+            }
+          }, 250);
+        }
+      }
+
+      // 2. Track deleted review ID locally so background fetch never re-adds it
+      try {
+        let deletedIds = JSON.parse(localStorage.getItem("deleted_review_ids") || "[]");
+        if (!deletedIds.includes(reviewId)) {
+          deletedIds.push(reviewId);
+          localStorage.setItem("deleted_review_ids", JSON.stringify(deletedIds));
+        }
+      } catch (e) {}
+
+      // 3. Remove from localStorage user_submitted_reviews
+      try {
+        let localReviews = JSON.parse(localStorage.getItem("user_submitted_reviews") || "[]");
+        localReviews = localReviews.filter(r => (r.id || `${r.username}_${r.timestamp}`) !== reviewId);
+        localStorage.setItem("user_submitted_reviews", JSON.stringify(localReviews));
+      } catch (e) {
+        console.warn("Error removing review from localStorage:", e);
+      }
+
+      // 4. Fire async Firestore delete in background without blocking UI
+      if (window.db && window.deleteDoc && window.doc) {
+        try {
+          window.deleteDoc(window.doc(window.db, "reviews", reviewId))
+            .catch(err => console.warn("Firestore delete review warning:", err));
+        } catch (e) {
+          console.warn("Firestore delete exception:", e);
+        }
+      }
+    };
+
+    // Load and display existing reviews from Firestore + LocalStorage fallback
+    function loadReviews() {
+      const productKey = (localStorage.getItem("checkout_title") || "default").toLowerCase().replace(/\s+/g, "_");
+
+      let localReviews = [];
+      try {
+        localReviews = JSON.parse(localStorage.getItem("user_submitted_reviews") || "[]");
+      } catch (e) {
+        localReviews = [];
+      }
+
+      let deletedIds = [];
+      try {
+        deletedIds = JSON.parse(localStorage.getItem("deleted_review_ids") || "[]");
+      } catch (e) {
+        deletedIds = [];
+      }
+
+      const renderCombined = (firestoreReviews = []) => {
+        const combined = [...localReviews, ...firestoreReviews];
+        const filtered = combined.filter(r => {
+          const key = r.id || `${r.username}_${r.timestamp}`;
+          if (deletedIds.includes(key)) return false;
+          return (r.productKey || "default") === productKey || !r.productKey;
+        });
+        
+        // Deduplicate reviews by ID or timestamp
+        const unique = [];
+        const seen = new Set();
+        filtered.forEach(r => {
+          const key = r.id || `${r.username}_${r.timestamp}`;
+          if (!seen.has(key) && !deletedIds.includes(key)) {
+            seen.add(key);
+            unique.push(r);
+          }
+        });
+
+        unique.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        if (countBadge) countBadge.textContent = `(${unique.length})`;
+
+        if (unique.length === 0) {
+          if (emptyState) emptyState.style.display = "block";
+          const existingCards = feedContainer ? feedContainer.querySelectorAll(".review-card") : [];
+          existingCards.forEach(c => c.remove());
+          return;
+        }
+        if (emptyState) emptyState.style.display = "none";
+
+        // Render reviews
+        if (!feedContainer) return;
+        const existingCards = feedContainer.querySelectorAll(".review-card");
+        existingCards.forEach(c => c.remove());
+
+        const currentProfileName = (localStorage.getItem("profileName") || "").trim().toLowerCase();
+        const isLoggedIn = localStorage.getItem("profileIsLoggedIn") === "true";
+
+        unique.forEach(r => {
+          const card = document.createElement("div");
+          card.className = "review-card";
+          const rId = r.id || `${r.username}_${r.timestamp}`;
+          card.setAttribute("data-id", rId);
+
+          const stars = "★".repeat(r.rating || 5) + "☆".repeat(5 - (r.rating || 5));
+          const date = r.timestamp ? new Date(r.timestamp).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+          const photosHTML = (r.photos || []).map(src =>
+            `<img src="${src}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.15);cursor:pointer;" onclick="openPhotoModal(this.src)" title="Click to view photo" referrerpolicy="no-referrer">`
+          ).join("");
+
+          const reviewUsername = (r.username || "").trim().toLowerCase();
+          const isOwner = isLoggedIn && currentProfileName && currentProfileName === reviewUsername;
+
+          card.innerHTML = `
+            <div class="review-card-header">
+              <div class="review-avatar-name">
+                <div class="review-avatar">${(r.username || "?")[0].toUpperCase()}</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span class="review-username">${r.username || "Anonymous"}</span>
+                  <span class="review-stars" style="color:#fbbf24; font-size:0.95rem; line-height:1;">${stars}</span>
+                </div>
+              </div>
+              <div class="review-date-top" style="color:rgba(255,255,255,0.6); font-family:'League Spartan','Montserrat',sans-serif; font-size:0.85rem; font-weight:700; font-style:italic;">${date}</div>
+            </div>
+            ${r.comment ? `<div class="review-comment-text">${r.comment}</div>` : ""}
+            ${photosHTML ? `<div class="review-photos-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">${photosHTML}</div>` : ""}
+            ${isOwner ? `
+              <div class="review-card-footer" style="display:flex; justify-content:flex-end; margin-top:12px;">
+                <button class="delete-review-btn" onclick="window.deleteUserReview('${rId}')">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  DELETE
+                </button>
+              </div>
+            ` : ""}
+          `;
+          feedContainer.appendChild(card);
+        });
+      };
+
+      // Render local instant fallback first for 0ms latency
+      renderCombined([]);
+
+      // Sync Firestore in background
+      if (window.db && window.collection && window.getDocs) {
+        window.getDocs(window.collection(window.db, "reviews"))
+          .then(snap => {
+            const firestoreReviews = [];
+            snap.forEach(doc => firestoreReviews.push({ id: doc.id, ...doc.data() }));
+            renderCombined(firestoreReviews);
+          })
+          .catch(err => {
+            console.warn("Could not load Firestore reviews, rendering local fallback:", err);
+          });
+      }
+    }
+    loadReviews();
+
+    // Submit review
+    if (submitBtn) {
+      submitBtn.addEventListener("click", () => {
+        const isLoggedIn = localStorage.getItem("profileIsLoggedIn") === "true";
+        if (!isLoggedIn) {
+          alert("Please sign in to submit a review.");
+          return;
+        }
+
+        const comment = commentInput ? commentInput.value.trim() : "";
+        const username = localStorage.getItem("profileName") || "Anonymous";
+        const productKey = (localStorage.getItem("checkout_title") || "default").toLowerCase().replace(/\s+/g, "_");
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
+
+        const reviewId = `${username}_${Date.now()}`;
+        const reviewData = {
+          id: reviewId,
+          username,
+          rating: selectedRating,
+          comment,
+          photos: uploadedPhotos.slice(0, 2),
+          productKey,
+          timestamp: Date.now()
+        };
+
+        // Always save locally so submission succeeds and displays immediately
+        try {
+          let localReviews = JSON.parse(localStorage.getItem("user_submitted_reviews") || "[]");
+          localReviews.unshift(reviewData);
+          localStorage.setItem("user_submitted_reviews", JSON.stringify(localReviews));
+        } catch (e) {
+          console.warn("Failed to store review in localStorage:", e);
+        }
+
+        const handleSuccess = () => {
+          if (commentInput) commentInput.value = "";
+          uploadedPhotos = [];
+          renderPhotoPreviews();
+          selectedRating = 5;
+          starBtns.forEach((s, i) => s.classList.toggle("active", i < 5));
+          submitBtn.textContent = "✅ Review Submitted!";
+          setTimeout(() => {
+            submitBtn.textContent = "SUBMIT YOUR REVIEW";
+            submitBtn.disabled = false;
+          }, 2000);
+          loadReviews();
+        };
+
+        // Try syncing to Firestore
+        if (window.db && window.setDoc && window.doc) {
+          window.setDoc(window.doc(window.db, "reviews", reviewId), reviewData)
+            .then(() => {
+              handleSuccess();
+            })
+            .catch(err => {
+              console.warn("Firestore save fallback trigger (permission or offline):", err);
+              handleSuccess();
+            });
+        } else {
+          handleSuccess();
+        }
+      });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupReviews);
+  } else {
+    setupReviews();
+  }
+})();
+
+// =====================================================================
+// GLOBAL PHOTO POPUP MODAL (Enlarged photo preview with Red X close button)
+// =====================================================================
+function openPhotoModal(imageSrc) {
+  if (!imageSrc) return;
+
+  let modalBackdrop = document.getElementById("global-photo-modal-backdrop");
+
+  if (!modalBackdrop) {
+    modalBackdrop = document.createElement("div");
+    modalBackdrop.id = "global-photo-modal-backdrop";
+    modalBackdrop.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    modalBackdrop.innerHTML = `
+      <div id="global-photo-modal-content" style="
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        background: rgba(18, 20, 32, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 255, 255, 0.05);
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: scale(0.9);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      ">
+        <button id="global-photo-modal-close" title="Close" style="
+          position: absolute;
+          top: -14px;
+          right: -14px;
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+          color: #ffffff;
+          border: 2px solid #ffffff;
+          font-size: 18px;
+          font-weight: 800;
+          line-height: 1;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 6px 16px rgba(220, 38, 38, 0.6);
+          z-index: 1000000;
+          transition: transform 0.2s ease, background 0.2s ease;
+        ">✕</button>
+        <img id="global-photo-modal-img" src="" alt="Enlarged review photo" style="
+          max-width: 85vw;
+          max-height: 80vh;
+          object-fit: contain;
+          border-radius: 12px;
+          display: block;
+          user-select: none;
+        ">
+      </div>
+    `;
+
+    document.body.appendChild(modalBackdrop);
+
+    const closeBtn = modalBackdrop.querySelector("#global-photo-modal-close");
+    const content = modalBackdrop.querySelector("#global-photo-modal-content");
+
+    closeBtn.addEventListener("mouseenter", () => {
+      closeBtn.style.transform = "scale(1.12)";
+    });
+    closeBtn.addEventListener("mouseleave", () => {
+      closeBtn.style.transform = "scale(1)";
+    });
+
+    const closeModal = () => {
+      modalBackdrop.style.opacity = "0";
+      if (content) content.style.transform = "scale(0.9)";
+      setTimeout(() => {
+        modalBackdrop.style.display = "none";
+        document.body.style.overflow = "";
+      }, 250);
+    };
+
+    closeBtn.addEventListener("click", closeModal);
+
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) {
+        closeModal();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modalBackdrop.style.display === "flex") {
+        closeModal();
+      }
+    });
+  }
+
+  const imgEl = modalBackdrop.querySelector("#global-photo-modal-img");
+  const contentEl = modalBackdrop.querySelector("#global-photo-modal-content");
+
+  if (imgEl) imgEl.src = imageSrc;
+
+  modalBackdrop.style.display = "flex";
+  document.body.style.overflow = "hidden";
+
+  requestAnimationFrame(() => {
+    modalBackdrop.style.opacity = "1";
+    if (contentEl) contentEl.style.transform = "scale(1)";
+  });
+}
+
+window.openPhotoModal = openPhotoModal;
 
 

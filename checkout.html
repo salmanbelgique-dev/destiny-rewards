@@ -127,13 +127,13 @@
         </a>
       </li>
       <li>
-        <a href="index.html#second-layer" class="sticky-nav-link" id="nav-bid-link">
+        <a href="#second-layer" class="sticky-nav-link" id="nav-bid-link">
           <img src="images/lock_cropped.png" alt="Lock" class="nav-lock-icon">
           BID
         </a>
       </li>
       <li>
-        <a href="index.html#second-layer" class="sticky-nav-link" id="nav-free-link">
+        <a href="#second-layer" class="sticky-nav-link" id="nav-free-link">
           <img src="images/lock_cropped.png" alt="Lock" class="nav-lock-icon">
           FOR FREE
         </a>
@@ -237,6 +237,22 @@
               </ul>
             </div>
 
+            <!-- Game Photos Section (For Lucky Premium / Raiders / Expedition / Kingdom Game 96X) -->
+            <div class="checkout-desc-section" id="checkout-game-photos-section" style="display: none;">
+              <span class="checkout-desc-label">ALBUM:</span>
+              <div class="checkout-photos-grid">
+                <div class="checkout-photo-card" onclick="openPhotoModal('https://www.dropbox.com/scl/fi/bh8of2qrnsri3jalwsl3b/ChatGPT-Image-2-juil.-2026-01_05_25.png?rlkey=p8b1h2r7ttnnveojnv1bqe6oq&st=3bs170mk&dl=1')">
+                  <img src="https://www.dropbox.com/scl/fi/bh8of2qrnsri3jalwsl3b/ChatGPT-Image-2-juil.-2026-01_05_25.png?rlkey=p8b1h2r7ttnnveojnv1bqe6oq&st=3bs170mk&dl=1" alt="Game Screenshot 1" referrerpolicy="no-referrer">
+                </div>
+                <div class="checkout-photo-card" onclick="openPhotoModal('https://www.dropbox.com/scl/fi/b6rbuf3anidbd6d3460pg/ChatGPT-Image-2-juil.-2026-03_14_57.png?rlkey=0c3bj0ytbox9si2qmhys6g6sn&st=21a3qnpt&dl=1')">
+                  <img src="https://www.dropbox.com/scl/fi/b6rbuf3anidbd6d3460pg/ChatGPT-Image-2-juil.-2026-03_14_57.png?rlkey=0c3bj0ytbox9si2qmhys6g6sn&st=21a3qnpt&dl=1" alt="Game Screenshot 2" referrerpolicy="no-referrer">
+                </div>
+                <div class="checkout-photo-card" onclick="openPhotoModal('https://www.dropbox.com/scl/fi/27pxn9krdm0mg99egbrf2/ChatGPT-Image-2-juil.-2026-17_25_59.png?rlkey=c70vl6vvit6h71s7ifwextro6&st=lyg44n53&dl=1')">
+                  <img src="https://www.dropbox.com/scl/fi/27pxn9krdm0mg99egbrf2/ChatGPT-Image-2-juil.-2026-17_25_59.png?rlkey=c70vl6vvit6h71s7ifwextro6&st=lyg44n53&dl=1" alt="Game Screenshot 3" referrerpolicy="no-referrer">
+                </div>
+              </div>
+            </div>
+
             <div class="checkout-desc-section">
               <h4 class="checkout-desc-heading">Dozens of possibilities</h4>
               <p class="checkout-description-text">
@@ -255,6 +271,80 @@
             <div class="checkout-policy-alert">
               <i class="policy-icon" data-lucide="alert-triangle"></i>
               <span class="checkout-policy-text">Random games cannot be exchanged or returned.</span>
+            </div>
+
+            <!-- OUR SIMILAR PRODUCTS Carousel Section -->
+            <div class="similar-products-container" id="similar-products-section">
+              <div class="similar-products-header">
+                <h3 class="similar-products-title">OUR SIMILAR PRODUCTS</h3>
+              </div>
+              <div class="similar-carousel-wrapper">
+                <div class="similar-carousel-track" id="similar-carousel-track">
+                  <!-- Dynamically populated by script.js -->
+                </div>
+              </div>
+            </div>
+
+            <!-- CUSTOMER REVIEWS SECTION (Below Similar Products Block) -->
+            <div class="checkout-reviews-container" id="checkout-reviews-section">
+              <div class="checkout-reviews-header">
+                <h3 class="checkout-sub-title">PRODUCT REVIEWS <span id="reviews-count-badge" class="reviews-count-badge">(0)</span></h3>
+              </div>
+
+              <!-- Review Submission Form / Sign In Prompt -->
+              <div class="review-submission-box" id="review-submission-box">
+                <!-- Logged In State Form -->
+                <div id="review-form-content" style="display: none;">
+                  <div class="review-form-header">
+                    <span class="review-form-title">HOW DID YOU RATE OUR PRODUCT</span>
+                  </div>
+                  
+                  <!-- Interactive 5-Star Rating -->
+                  <div class="review-star-rating-row">
+                    <span class="star-rating-label">Rating:</span>
+                    <div class="review-star-rating" id="review-star-rating">
+                      <span class="star-btn active" data-value="1">★</span>
+                      <span class="star-btn active" data-value="2">★</span>
+                      <span class="star-btn active" data-value="3">★</span>
+                      <span class="star-btn active" data-value="4">★</span>
+                      <span class="star-btn active" data-value="5">★</span>
+                    </div>
+                  </div>
+
+                  <!-- Comment Textarea -->
+                  <textarea id="review-comment-input" class="review-comment-textarea" placeholder="Share your experience with our product..." rows="3" maxlength="500"></textarea>
+
+                  <!-- Photo Upload Area (Max 2 Photos) -->
+                  <div class="review-photo-upload-row">
+                    <label class="review-upload-btn" id="review-upload-btn-label">
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                      </svg>
+                      <span>Attach Photos (Max 2)</span>
+                      <input type="file" id="review-photo-input" accept="image/*" multiple style="display: none;">
+                    </label>
+                    
+                    <div class="review-photo-previews" id="review-photo-previews"></div>
+                  </div>
+
+                  <!-- Submit Review Button -->
+                  <button id="submit-review-btn" class="review-submit-btn" type="button">SUBMIT YOUR REVIEW</button>
+                </div>
+
+                <!-- Logged Out Sign-In Prompt -->
+                <div id="review-login-prompt" class="review-login-prompt" style="display: none;">
+                  <p class="review-login-msg">Sign in with your Google account to leave a review and share photos!</p>
+                  <button class="google-signin-btn" onclick="showGoogleLogin()" style="margin: 10px auto 0 auto; max-width: 220px; padding: 10px 16px;">
+                    <span class="google-btn-text">Sign in to Review</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Reviews Feed Container (Sorted Newest to Oldest) -->
+              <div class="reviews-feed-container" id="reviews-feed-container">
+                <div class="reviews-empty-state" id="reviews-empty-state">No reviews yet. Be the first to leave a review for this game!</div>
+              </div>
             </div>
           </div>
         </div>
@@ -440,8 +530,8 @@
               <a href="mailto:support@destinyrewards.com" class="blue-layer-nav-link">EMAIL US</a>
               <a href="challenge.html" class="blue-layer-nav-link">CHALLENGE</a>
               <a href="buy.html" class="blue-layer-nav-link">BUY</a>
-              <a href="index.html#second-layer" class="blue-layer-nav-link">BID</a>
-              <a href="index.html#second-layer" class="blue-layer-nav-link">FOR FREE</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'bid'); return false;">BID</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'free'); return false;">FOR FREE</a>
             </div>
           </div>
           <!-- Copyright Info -->

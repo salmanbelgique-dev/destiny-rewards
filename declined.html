@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Destiny Rewards - Order Declined</title>
+  <meta name="description" content="Destiny Rewards Order Declined Details">
+  
+  <!-- Google Fonts: Montserrat, Bangers, League Spartan -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=League+Spartan:wght@700;800;900&family=Montserrat:ital,wght@1,900&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=113">
+
+  <!-- Import Map for Firebase Modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+        "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+        "firebase/database": "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"
+      }
+    }
+  </script>
+  <!-- Firebase Initialization -->
+  <script src="firebase.js?v=115" type="module"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      background: #050a17 !important;
+      background: radial-gradient(circle at 50% 20%, #0d1b3a 0%, #050a17 70%, #020409 100%) !important;
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Page container layout */
+    .confirmation-main-section {
+      min-height: calc(100vh - 200px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px 80px 20px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    /* Apple iOS 26 Liquid Glass Confirmation Card */
+    .ios26-glass-card {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.65) 0%, rgba(15, 23, 42, 0.5) 100%);
+      backdrop-filter: blur(40px) saturate(190%);
+      -webkit-backdrop-filter: blur(40px) saturate(190%);
+      border: 1.5px solid rgba(59, 130, 246, 0.45);
+      border-radius: 36px;
+      padding: 44px 36px 36px 36px;
+      box-sizing: border-box;
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.75),
+        inset 0 1px 1px rgba(255, 255, 255, 0.35),
+        inset 0 -10px 20px rgba(0, 0, 0, 0.4),
+        0 0 35px rgba(59, 130, 246, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+      margin: 40px 0;
+    }
+
+    /* Apple iOS 26 High-End Glass Validation Emblem */
+    .ios26-check-badge-top-right {
+      position: absolute;
+      top: -26px;
+      right: -26px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #34d399 0%, #10b981 45%, #047857 85%, #022c22 100%);
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px) saturate(200%);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 
+        0 14px 35px rgba(16, 185, 129, 0.65),
+        0 0 30px rgba(52, 211, 153, 0.5),
+        inset 0 3px 6px rgba(255, 255, 255, 0.75),
+        inset 0 -6px 12px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+      animation: ios26GlowPulse 3s infinite ease-in-out;
+      overflow: hidden;
+    }
+    /* Liquid glass curved reflection arc */
+    .ios26-check-badge-top-right::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 80%;
+      height: 48%;
+      border-radius: 50% 50% 0 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.05) 100%);
+      pointer-events: none;
+    }
+    /* Inner glowing ring */
+    .ios26-check-badge-top-right::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      pointer-events: none;
+    }
+
+    @keyframes ios26GlowPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 14px 35px rgba(16, 185, 129, 0.65), 0 0 30px rgba(52, 211, 153, 0.5);
+      }
+      50% {
+        transform: scale(1.06);
+        box-shadow: 0 18px 45px rgba(16, 185, 129, 0.85), 0 0 45px rgba(52, 211, 153, 0.75);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .ios26-check-badge-top-right {
+        top: -18px;
+        right: 14px;
+        width: 56px;
+        height: 56px;
+      }
+      .ios26-glass-card {
+        padding: 36px 20px 28px 20px;
+        border-radius: 28px;
+      }
+    }
+
+    /* Status Pill Tag */
+    .status-pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      font-family: 'League Spartan', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Sentence Box */
+    .delivery-sentence-box {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.05rem;
+      font-weight: 500;
+      line-height: 1.5;
+      margin: 4px 0 8px 0;
+      max-width: 90%;
+    }
+
+    /* Highlighted Email Container */
+    .delivered-email-highlight {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      border-radius: 16px;
+      padding: 16px 24px;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    }
+    .delivered-email-label {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .delivered-email-value {
+      font-size: 1.25rem;
+      color: #60a5fa;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      word-break: break-all;
+    }
+
+    /* Details Grid inside Glass Card */
+    .delivered-details-grid {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 20px;
+      padding: 18px 24px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.05rem;
+    }
+    .detail-label {
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
+    }
+    .detail-val {
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    /* Action Buttons */
+    .btn-action-group {
+      display: flex;
+      gap: 14px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    @media (max-width: 480px) {
+      .btn-action-group {
+        flex-direction: column;
+      }
+    }
+    .btn-primary-support {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px 22px;
+      border-radius: 16px;
+      background: #25d366;
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 22px rgba(37, 211, 102, 0.45);
+      transition: all 0.3s ease;
+    }
+    .btn-primary-support:hover {
+      transform: translateY(-2px);
+      background: #20bd5a;
+      box-shadow: 0 12px 28px rgba(37, 211, 102, 0.65);
+    }
+    .btn-secondary-home {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px 22px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: bold;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary-home:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    /* Fixed Brand Logo Styling */
+    .brand-logo-glass-container {
+      position: fixed !important;
+      top: 16px !important;
+      left: 24px !important;
+      width: auto !important;
+      height: 60px !important;
+      transform: none !important;
+      animation: none !important;
+      z-index: 100 !important;
+      display: flex !important;
+      align-items: center !important;
+      background: rgba(15, 23, 42, 0.65) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 20px !important;
+      padding: 6px 18px 6px 10px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+    }
+    .brand-logo-link {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      text-decoration: none !important;
+    }
+    .brand-logo-img {
+      width: 44px !important;
+      height: 44px !important;
+      object-fit: contain !important;
+      flex-shrink: 0 !important;
+    }
+    .brand-logo-text {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      animation: none !important;
+      opacity: 1 !important;
+      width: auto !important;
+      transform: none !important;
+    }
+    .logo-destiny {
+      font-family: 'Bangers', cursive !important;
+      font-size: 1.35rem !important;
+      color: #60a5fa !important;
+      line-height: 1 !important;
+      letter-spacing: 1px !important;
+    }
+    .logo-rewards {
+      font-family: 'Bangers', cursive !important;
+      font-size: 1.35rem !important;
+      color: #ffffff !important;
+      line-height: 1 !important;
+      letter-spacing: 1px !important;
+    }
+    @media (max-width: 768px) {
+      .brand-logo-glass-container {
+        top: 12px !important;
+        left: 14px !important;
+        height: 50px !important;
+        padding: 4px 12px 4px 8px !important;
+      }
+      .brand-logo-img {
+        width: 36px !important;
+        height: 36px !important;
+      }
+      .logo-destiny, .logo-rewards {
+        font-size: 1.15rem !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Section Container with Ambient Liquid Background -->
+  <section class="confirmation-main-section">
+    <div class="liquid-blob blob-1"></div>
+    <div class="liquid-blob blob-2"></div>
+    <div class="liquid-blob blob-3"></div>
+
+    <!-- Apple iOS 26 Liquid Glass Card Box -->
+    <div class="ios26-glass-card">
+      
+      <!-- Status Tag -->
+      <div class="status-pill-badge">
+        <i data-lucide="x-circle" style="width: 22px; height: 22px;"></i>
+        <span>NOT DELIVERED & REJECTED</span>
+      </div>
+
+      <!-- 3D Squircle Video Container -->
+      <div class="payment-mockup-shape-container" style="display: flex; justify-content: center; align-items: center; width: 100%; margin: 8px 0 4px 0;">
+        <div style="width: 180px; height: 180px; border-radius: 28px; background: linear-gradient(135deg, rgba(26, 38, 64, 0.95), rgba(13, 20, 36, 0.95)); border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.2); padding: 10px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; position: relative; overflow: visible;">
+          <!-- Mini corner red badge -->
+          <div style="position: absolute; top: -10px; right: -10px; width: 36px; height: 36px; border-radius: 50%; background: rgba(239, 68, 68, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1.5px solid rgba(239, 68, 68, 0.6); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.45); display: flex; align-items: center; justify-content: center; z-index: 10;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </div>
+          <div style="width: 100%; height: 100%; border-radius: 20px; overflow: hidden; background: #120422; display: flex; align-items: center; justify-content: center;">
+            <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 20px;">
+              <source src="https://www.dropbox.com/scl/fi/1nhyqqts3ic79qk9uxfsi/From-Klickpin.com-3377768468726443-pin-id-3377768468726443.mp4?rlkey=6pvotxyfhea7bw84jw26vwadv&st=m7wwd5hg&dl=1" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h1 style="font-family: 'League Spartan', sans-serif; font-size: 2.2rem; font-weight: 900; color: #ffffff; margin: 0; letter-spacing: 0.5px; text-transform: uppercase;">
+        ORDER DETAILS DECLINED!
+      </h1>
+
+      <!-- Informative Sentence -->
+      <p class="delivery-sentence-box">
+        We’re sorry, but your order was rejected because we did not receive your payment. For more information, please feel free to contact us.
+      </p>
+
+      <!-- Buttons -->
+      <div class="btn-action-group">
+        <a id="support-bot-btn" href="https://wa.me/message/YTRSS2WSIZQVI1" target="_blank" class="btn-primary-support">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/>
+          </svg>
+          CONTACT US
+        </a>
+        <a href="buy.html" class="btn-secondary-home">
+          <i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>
+          ORDER AGAIN
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer Section -->
+  <section class="blue-half-layer buy-page-footer">
+    <!-- Cloud Style Divider -->
+    <div class="cloud-divider">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,120 L0,0 C90,40 180,60 280,60 C380,60 460,20 540,40 C620,60 700,80 800,80 C900,80 980,40 1060,50 C1140,60 1240,90 1340,70 C1390,60 1420,30 1440,0 L1440,120 Z" fill="#000000"></path>
+      </svg>
+    </div>
+
+    <!-- Footer Content Wrapper -->
+    <div class="buy-footer-body-wrapper">
+      <div class="blue-layer-content">
+        <div class="blue-layer-left">
+          <div class="blue-layer-logo-row">
+            <div class="blue-layer-logo-glass">
+              <img src="images/brand-logo.png?v=1" alt="Brand Logo" class="blue-layer-logo-img">
+              <div class="blue-layer-logo-text">
+                <span class="blue-layer-text-destiny">DESTINY</span>
+                <span class="blue-layer-text-rewards">REWARDS</span>
+              </div>
+            </div>
+            <div class="blue-layer-socials">
+              <a href="https://t.me/Destinyrewards_bot" target="_blank" class="blue-layer-social-link" title="Telegram">
+                <img src="https://www.dropbox.com/scl/fi/0c7uekuupio6rckmdf72u/telegram-white-icon.webp?rlkey=gwg7wb0xie3cr5kab7jdatjw4&st=m3d5ml2y&dl=1" alt="Telegram">
+              </a>
+              <a href="#" class="blue-layer-social-link" title="Instagram">
+                <img src="https://www.dropbox.com/scl/fi/vqayt584oli4i16ela37h/instagram-white-icon.webp?rlkey=kmlvg9oy78dyfy115shmtsr7e&st=0z54w1rb&dl=1" alt="Instagram">
+              </a>
+              <a href="#" class="blue-layer-social-link" title="Facebook">
+                <img src="https://www.dropbox.com/scl/fi/pay7c8vo5xnt0syfwpowv/facebook-app-round-white-icon.webp?rlkey=svhxzcrct0hc3o8ta98lpeieq&st=a6orxjrm&dl=1" alt="Facebook">
+              </a>
+            </div>
+          </div>
+          <p class="blue-layer-description">
+            DestinyRewards is a digital marketplace for gaming products, offering great deals, exclusive rewards, and affordable prices. We're happy to have you as part of our community!
+          </p>
+        </div>
+
+        <div class="blue-layer-right">
+          <div class="blue-layer-nav-card">
+            <div class="blue-layer-nav-grid">
+              <a href="index.html" class="blue-layer-nav-link">HOME</a>
+              <a href="mailto:support@destinyrewards.com" class="blue-layer-nav-link">EMAIL US</a>
+              <a href="challenge.html" class="blue-layer-nav-link">CHALLENGE</a>
+              <a href="buy.html" class="blue-layer-nav-link">BUY</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'bid'); return false;">BID</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'free'); return false;">FOR FREE</a>
+            </div>
+          </div>
+          <div class="blue-layer-rights">
+            Ⓒ 2026 DESTINY REWARDS. All Rights Reserved
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page Dynamic Parameter Handler Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Initialize Lucide Icons
+      if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+      }
+
+      // Parse parameters from URL Query String or fallback to localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const txId = urlParams.get("txid") || localStorage.getItem("payment_txid") || "ERMDT";
+      const email = urlParams.get("email") || localStorage.getItem("checkout_email") || "you@example.com";
+      const title = urlParams.get("title") || localStorage.getItem("checkout_title") || "Lucky Premium Game";
+
+      // Render Dynamic Text Fields
+      const emailEl = document.getElementById("delivered-email-val");
+      const txidEl = document.getElementById("delivered-txid-val");
+      const itemEl = document.getElementById("delivered-item-title");
+      const supportBtnEl = document.getElementById("support-bot-btn");
+
+      if (emailEl) emailEl.textContent = email;
+      if (txidEl) txidEl.textContent = txId;
+      if (itemEl) itemEl.textContent = title;
+
+      if (supportBtnEl) {
+        supportBtnEl.href = "https://wa.me/message/YTRSS2WSIZQVI1";
+      }
+
+      // Store params globally so the module script can access them
+      window._orderParams = { txId, email, title };
+    });
+  </script>
+
+  <!-- SELF-CONTAINED Firebase Order Status Watcher -->
+  <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, doc, getDoc, onSnapshot } from "firebase/firestore";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBOCEyQN4zcZyNTWhO9-mN1-sBxM3RSywI",
+      authDomain: "destiny-rewards-f3a5d.firebaseapp.com",
+      projectId: "destiny-rewards-f3a5d",
+      storageBucket: "destiny-rewards-f3a5d.firebasestorage.app",
+      messagingSenderId: "650427918746",
+      appId: "1:650427918746:web:6a8c4c94f38169a28bf223",
+      measurementId: "G-RMRCER7949"
+    };
+
+    let app;
+    try { app = initializeApp(firebaseConfig, "orderWatcher"); } catch (e) {
+      const { getApp } = await import("firebase/app");
+      try { app = getApp("orderWatcher"); } catch (e2) { app = initializeApp(firebaseConfig); }
+    }
+    const db = getFirestore(app);
+
+    function waitForParams() {
+      return new Promise((resolve) => {
+        const check = () => {
+          const p = window._orderParams;
+          if (p && p.txId) { resolve(p); return; }
+          setTimeout(check, 100);
+        };
+        check();
+      });
+    }
+
+    const { txId, email, title } = await waitForParams();
+    let redirected = false;
+    const orderDocRef = doc(db, "orders", txId);
+
+    function buildUrl(page, status) {
+      return `${page}?txid=${encodeURIComponent(txId)}&email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}&orderStatus=${encodeURIComponent(status)}`;
+    }
+
+    function handleStatus(data) {
+      if (!data || redirected) return;
+      const orderStatus = (data.orderStatus || "").trim().toLowerCase();
+      if (orderStatus === "completed" || orderStatus === "delivered") {
+        redirected = true;
+        window.location.href = buildUrl("confirmation.html", "Completed");
+      } else if (orderStatus === "pending") {
+        redirected = true;
+        window.location.href = buildUrl("waiting.html", "pending");
+      }
+    }
+
+    onSnapshot(orderDocRef, (docSnap) => {
+      if (docSnap.exists()) handleStatus(docSnap.data());
+    }, (err) => console.warn("[OrderWatch] error:", err.message || err));
+
+    setInterval(async () => {
+      if (redirected) return;
+      try {
+        const snap = await getDoc(orderDocRef);
+        if (snap.exists()) handleStatus(snap.data());
+      } catch (e) {}
+    }, 5000);
+  </script>
+</body>
+
+</html>
