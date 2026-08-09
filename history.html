@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Destiny Rewards - Order History</title>
+  <meta name="description" content="Check your recent game purchases and order status">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+  <!-- Google Fonts: Montserrat Heavy Italic & Bangers -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=League+Spartan:wght@700;800;900&family=Montserrat:ital,wght@1,900&display=swap"
+    rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css?v=113">
+  <style>
+    /* Critical layout properties for immediate rendering on load (prevents FOUC/jumping) */
+    :root {
+      --logo-size: 96px;
+      --logo-target-left: 24px;
+      --logo-target-top: 16px;
+      --logo-expanded-width: 270px;
+      --logo-text-width: 160px;
+    }
+    @media (max-width: 768px) {
+      :root {
+        --logo-size: 72px;
+        --logo-target-left: 16px;
+        --logo-target-top: 12px;
+        --logo-expanded-width: 210px;
+        --logo-text-width: 120px;
+      }
+    }
+    .brand-logo-glass-container {
+      position: fixed !important;
+      top: var(--logo-target-top) !important;
+      left: var(--logo-target-left) !important;
+      width: var(--logo-expanded-width) !important;
+      height: var(--logo-size) !important;
+      transform: translate(0, 0) scale(0.85) !important;
+      animation: none !important;
+    }
+    .brand-logo-text {
+      animation: none !important;
+      opacity: 1 !important;
+      width: var(--logo-text-width) !important;
+      transform: translateX(0) !important;
+    }
+    #sticky-nav {
+      position: fixed !important;
+      top: calc(var(--logo-target-top) + (var(--logo-size) - 54px) / 2) !important;
+      right: var(--logo-target-left) !important;
+      transform: translateX(0) scale(0.85) !important;
+      opacity: 1 !important;
+      transition: none !important;
+    }
+    @media (max-width: 768px) {
+      #sticky-nav {
+        top: calc(var(--logo-target-top) + (var(--logo-size) - 38px) / 2) !important;
+      }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .history-container {
+      display: flex;
+      gap: 40px;
+      margin-top: 60px;
+      margin-bottom: 80px;
+      width: 100%;
+      align-items: flex-start;
+      box-sizing: border-box;
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .history-left-panel {
+      flex: 1;
+      max-width: 320px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: sticky;
+      top: 120px;
+      background: #000000 !important; /* Solid black rounded rectangle box ONLY for Order History text! */
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 24px !important;
+      padding: 32px 28px !important;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9) !important;
+      box-sizing: border-box !important;
+      height: fit-content !important; /* Ends vertically right below 'Back to Store' link! */
+    }
+
+    @media (max-width: 768px) {
+      .history-container {
+        flex-direction: column !important;
+        gap: 40px !important;
+        margin-top: 100px !important;
+      }
+      .history-left-panel {
+        position: static !important;
+        max-width: 100% !important;
+        text-align: center !important;
+        align-items: center !important;
+        padding: 30px 20px !important;
+      }
+    }
+
+    /* 3-Column Grid for History Cards */
+    .history-grid-container {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(240px, 300px)) !important;
+      gap: 20px !important;
+      width: 100% !important;
+    }
+    
+    @media (max-width: 1200px) {
+      .history-grid-container {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .history-grid-container {
+        grid-template-columns: 1fr !important;
+        justify-items: center !important;
+      }
+    }
+
+    /* Premium Solid Black Card Base with Gold / Blue Borders */
+    .premium-history-card {
+      background: #08090c !important;
+      border-radius: 24px !important;
+      padding: 20px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      width: 100% !important;
+      max-width: 300px !important;
+      height: auto !important;
+      min-height: 480px !important;
+      box-sizing: border-box !important;
+      position: relative !important;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    }
+
+    /* 96X Item: Golden Border */
+    .premium-card-gold {
+      border: 1.5px solid #d4af37 !important;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(212, 175, 55, 0.3) !important;
+    }
+
+    .premium-card-gold:hover {
+      transform: translateY(-5px) scale(1.01) !important;
+      border-color: #f3e5ab !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(212, 175, 55, 0.5) !important;
+    }
+
+    /* All Other Items: Blue Border */
+    .premium-card-blue {
+      border: 1.5px solid #3b82f6 !important;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(59, 130, 246, 0.3) !important;
+    }
+
+    .premium-card-blue:hover {
+      transform: translateY(-5px) scale(1.01) !important;
+      border-color: #60a5fa !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(59, 130, 246, 0.5) !important;
+    }
+
+    .premium-card-thumbnail-container {
+      width: 100% !important;
+      height: 180px !important;
+      margin: 0 !important;
+      border-radius: 16px !important;
+      overflow: hidden !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      background: rgba(0, 0, 0, 0.3) !important;
+      flex-shrink: 0 !important;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.5) !important;
+    }
+
+    .premium-card-thumbnail {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+
+    .premium-card-title {
+      font-family: 'Montserrat', sans-serif !important;
+      font-weight: 900 !important;
+      font-style: italic !important;
+      font-size: 1.05rem !important;
+      color: #ffffff !important;
+      margin: 0 !important;
+      line-height: 1.3 !important;
+      text-transform: none !important;
+      letter-spacing: -0.2px !important;
+      display: block !important;
+      overflow: visible !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      text-align: left !important;
+    }
+
+    .premium-card-meta-row {
+      display: flex !important;
+      gap: 6px !important;
+      flex-wrap: wrap !important;
+      width: 100% !important;
+    }
+
+    .premium-card-badge {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      padding: 6px 10px !important;
+      border-radius: 8px !important;
+      font-family: 'Montserrat', sans-serif !important;
+      font-weight: 900 !important;
+      font-style: italic !important;
+      font-size: 0.65rem !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      box-sizing: border-box !important;
+    }
+
+    .premium-badge-gold {
+      background: rgba(8, 9, 12, 0.7) !important;
+      border: 1px solid #d4af37 !important;
+      color: #d4af37 !important;
+      backdrop-filter: blur(5px) !important;
+    }
+
+    .premium-badge-green {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      color: #10b981 !important;
+    }
+
+    .premium-badge-red {
+      background: rgba(239, 68, 68, 0.12) !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      color: #ef4444 !important;
+    }
+
+    .premium-card-action {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      width: 100% !important;
+      padding-top: 12px !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+      margin-top: auto !important;
+      gap: 6px !important;
+      box-sizing: border-box !important;
+    }
+
+    .premium-card-status-label {
+      font-family: 'Montserrat', sans-serif !important;
+      font-weight: 900 !important;
+      font-style: italic !important;
+      font-size: 0.85rem !important;
+      color: #ffffff !important;
+      letter-spacing: 0px !important;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3) !important;
+      flex-shrink: 0 !important;
+      text-transform: uppercase !important;
+    }
+
+    .premium-card-btn {
+      color: #ffffff !important;
+      border-radius: 10px !important;
+      font-family: 'Montserrat', sans-serif !important;
+      font-weight: 900 !important;
+      font-style: italic !important;
+      font-size: 0.64rem !important;
+      text-transform: uppercase !important;
+      cursor: default !important;
+      pointer-events: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 4px !important;
+      padding: 7px 10px !important;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+      box-sizing: border-box !important;
+      white-space: nowrap !important;
+      letter-spacing: 0.2px !important;
+      transition: all 0.3s ease !important;
+      max-width: calc(100% - 80px) !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+  </style>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Import Map for Firebase Modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+        "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+        "firebase/database": "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"
+      }
+    }
+  </script>
+  <!-- Firebase Initialization -->
+  <script src="firebase.js?v=115" type="module"></script>
+  <!-- JavaScript -->
+  <script src="script.js?v=115" defer></script>
+</head>
+
+<body class="buy-page-body">
+
+  <!-- Animated Glass Liquid Logo Container (Settle State) -->
+  <div class="brand-logo-glass-container" onclick="window.location.href='index.html';" style="animation: none; transform: translate(0, 0) scale(0.85); top: var(--logo-target-top); left: var(--logo-target-left); cursor: pointer;">
+    <img src="images/brand-logo.png?v=1" alt="Brand Logo" class="brand-logo-img">
+    <div class="brand-logo-text">
+      <div class="text-destiny">DESTINY</div>
+      <div class="text-rewards">REWARDS</div>
+    </div>
+  </div>
+
+  <!-- Sticky Liquid Glass Navigation Bar (Visible State) -->
+  <nav id="sticky-nav" class="visible">
+    <div class="nav-sliding-bubble" id="nav-sliding-bubble"></div>
+    <ul class="sticky-nav-links">
+      <li>
+        <a href="index.html" class="sticky-nav-link">
+          <svg class="nav-home-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2.09c-.55 0-1.05.28-1.38.73L2.38 11.06c-.5.5-.14 1.36.57 1.36H5v6.5c0 1.1.9 2 2 2h3v-5c0-1.1.9-2 2-2s2 .9 2 2v5h3c1.1 0 2-.9 2-2v-6.5h2.05c.71 0 1.07-.86.57-1.36L13.38 2.82C13.05 2.37 12.55 2.09 12 2.09z" />
+          </svg>
+          HOME
+        </a>
+      </li>
+      <li>
+        <a href="buy.html" class="sticky-nav-link" id="nav-buy-link">
+          <img src="images/buy_icon_white_dollar.png" alt="Buy" class="nav-buy-icon">
+          BUY
+        </a>
+      </li>
+      <li>
+        <a href="challenge.html" class="sticky-nav-link" id="nav-challenge-link">
+          <svg class="nav-spin-icon" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="48" r="40" fill="#6B8AFF" />
+            <path d="M50 8 L50 48 L82 20Z" fill="rgba(255,255,255,0.92)" />
+            <path d="M90 48 L50 48 L78 76Z" fill="rgba(255,255,255,0.92)" />
+            <path d="M50 88 L50 48 L22 76Z" fill="rgba(255,255,255,0.92)" />
+            <path d="M10 48 L50 48 L18 20Z" fill="rgba(255,255,255,0.92)" />
+            <circle cx="50" cy="48" r="6" fill="#6B8AFF" stroke="rgba(255,255,255,0.92)" stroke-width="3" />
+            <circle cx="12" cy="40" r="5" fill="rgba(255,255,255,0.92)" />
+            <rect x="44" y="86" width="12" height="14" rx="2" fill="#6B8AFF" />
+            <path d="M32 100 Q50 95 68 100 L68 108 Q50 103 32 108Z" fill="#6B8AFF" />
+          </svg>
+          CHALLENGE
+        </a>
+      </li>
+      <li>
+        <a href="#second-layer" class="sticky-nav-link" id="nav-bid-link">
+          <img src="images/lock_cropped.png" alt="Lock" class="nav-lock-icon">
+          BID
+        </a>
+      </li>
+      <li>
+        <a href="#second-layer" class="sticky-nav-link" id="nav-free-link">
+          <img src="images/lock_cropped.png" alt="Lock" class="nav-lock-icon">
+          FOR FREE
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- History Section -->
+  <section class="second-layer-section" id="buy-page">
+    <div class="liquid-blob blob-1"></div>
+    <div class="liquid-blob blob-2"></div>
+    <div class="liquid-blob blob-3"></div>
+
+    <div class="buy-content-wrapper">
+      <div class="buy-header-panel">
+        <div class="buy-title-group">
+          <h1 class="buy-title">Destiny Rewards</h1>
+          <span class="buy-subtitle">Your Orders</span>
+        </div>
+        
+        <!-- User Profile Widget Wrapper -->
+        <div class="buy-profile-widget-wrapper" style="display: flex; align-items: center; gap: 15px;">
+          <!-- Order History Circle Icon Button -->
+          <button id="order-history-btn" onclick="window.location.href='history.html';" title="Order History" style="position: relative; width: 44px; height: 44px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); border: 1.5px solid rgba(59, 130, 246, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 20px rgba(59, 130, 246, 0.35); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); outline: none;">
+            <i data-lucide="shopping-bag" style="color: #3b82f6; width: 22px; height: 22px; stroke-width: 2.3;"></i>
+            <span id="order-history-red-dot" class="blink-dot" style="display: none; position: absolute; top: 1px; right: 1px; width: 11px; height: 11px; background: #ef4444; border-radius: 50%; border: 2px solid #090a0d; box-shadow: 0 0 10px #ef4444; z-index: 10; pointer-events: none;"></span>
+          </button>
+
+          <!-- User Profile Widget (Top Right of Products) -->
+          <div class="buy-profile-widget" id="buy-profile-widget">
+            <div class="buy-logged-out-state" id="buy-logged-out-state">
+              <svg class="buy-avatar-placeholder" viewBox="0 0 100 100" title="Sign in to view your profile">
+                <circle cx="50" cy="50" r="50" fill="#d0d4db" />
+                <circle cx="50" cy="40" r="18" fill="#88909a" />
+                <path d="M 18,85 C 18,65 32,58 50,58 C 68,58 82,65 82,85 Z" fill="#88909a" />
+              </svg>
+              <button class="buy-google-signin-btn" id="buy-google-signin-btn">
+                <svg class="google-icon" viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Sign in with Google</span>
+              </button>
+            </div>
+
+            <div class="buy-logged-in-state" id="buy-logged-in-state" style="display: none;">
+              <div class="buy-profile-logout" id="buy-profile-logout" title="Log Out">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </div>
+              <div class="buy-profile-info">
+                <span class="buy-profile-name" id="buy-profile-name">Guest</span>
+                <span class="buy-profile-id" id="buy-profile-id">ID: -----</span>
+              </div>
+              <div class="buy-profile-avatar-container" id="buy-profile-avatar-container">
+                <img src="" alt="Profile Photo" id="buy-profile-avatar-img" class="buy-profile-avatar-img">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout -->
+      <div class="history-container">
+        
+        <!-- Left Side: Big Title -->
+        <div class="history-left-panel">
+          <h1 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-style: italic; font-size: 2.6rem; color: #ffffff; line-height: 1.1; letter-spacing: -1px; text-transform: uppercase; margin: 0; text-shadow: 0 0 30px rgba(59, 130, 246, 0.35);">
+            ORDER<br><span style="color: #3b82f6;">HISTORY</span>
+          </h1>
+          <p style="font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.5; margin: 0; font-style: italic; font-family: 'Montserrat', sans-serif;">
+            View all your recent purchases,<br>track payment verification status,<br>and check your delivered digital<br>product keys.
+          </p>
+          <a href="buy.html" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-style: italic; color: #3b82f6; text-decoration: none; font-size: 0.95rem; margin-top: 8px; transition: color 0.2s ease; font-family: 'Montserrat', sans-serif;" onmouseover="this.style.color='#ffffff';" onmouseout="this.style.color='#3b82f6';">
+            ← Back to Store
+          </a>
+        </div>
+
+        <!-- Right Side: Orders Grid -->
+        <div class="history-right-panel" style="flex: 2; display: flex; flex-direction: column; gap: 24px; width: 100%;">
+          
+          <!-- Loading State -->
+          <div id="history-loading" style="display: flex; justify-content: center; align-items: center; padding: 80px 0; width: 100%;">
+            <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #6b8aff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          </div>
+
+          <!-- Login Notice (If not logged in) -->
+          <div id="history-login-notice" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 48px; text-align: center; flex-direction: column; align-items: center; gap: 20px; width: 100%; box-sizing: border-box; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3);">
+              <i data-lucide="user-x" style="width: 32px; height: 32px;"></i>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.25rem; color: #ffffff; margin: 0;">Access Denied</h3>
+              <p style="font-size: 0.85rem; color: rgba(255,255,255,0.5); margin: 0; max-width: 320px;">Please sign in with your Google account above to view your order history.</p>
+            </div>
+          </div>
+
+          <!-- Empty State (If logged in but no orders) -->
+          <div id="history-empty-state" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 24px; padding: 48px; text-align: center; flex-direction: column; align-items: center; gap: 20px; width: 100%; box-sizing: border-box; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3);">
+              <i data-lucide="shopping-bag" style="width: 32px; height: 32px;"></i>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.25rem; color: #ffffff; margin: 0;">No Orders Found</h3>
+              <p style="font-size: 0.85rem; color: rgba(255,255,255,0.5); margin: 0; max-width: 320px;">You haven't placed any orders yet. Go back to the store to grab your first digital game code!</p>
+            </div>
+          </div>
+
+          <!-- Grid of Order Cards -->
+          <div id="history-grid" class="history-grid-container" style="display: none; width: 100%;">
+            <!-- Dynamically generated cards will go here -->
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cloud Divider Transition & Footer Layer -->
+  <section class="blue-half-layer buy-page-footer">
+    <div class="cloud-divider">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,120 L0,0 C90,40 180,60 280,60 C380,60 460,20 540,40 C620,60 700,80 800,80 C900,80 980,40 1060,50 C1140,60 1240,90 1340,70 C1390,60 1420,30 1440,0 L1440,120 Z" fill="#000000"></path>
+      </svg>
+    </div>
+
+    <div class="buy-footer-body-wrapper">
+      <div class="blue-layer-content">
+        <div class="blue-layer-left">
+          <div class="blue-layer-logo-row">
+            <div class="blue-layer-logo-glass">
+              <img src="images/brand-logo.png?v=1" alt="Brand Logo" class="blue-layer-logo-img">
+              <div class="blue-layer-logo-text">
+                <span class="blue-layer-text-destiny">DESTINY</span>
+                <span class="blue-layer-text-rewards">REWARDS</span>
+              </div>
+            </div>
+            <div class="blue-layer-socials">
+              <a href="https://t.me/Destinyrewards_bot" target="_blank" class="blue-layer-social-link" title="Telegram">
+                <img src="https://www.dropbox.com/scl/fi/0c7uekuupio6rckmdf72u/telegram-white-icon.webp?rlkey=gwg7wb0xie3cr5kab7jdatjw4&st=m3d5ml2y&dl=1" alt="Telegram">
+              </a>
+              <a href="#" class="blue-layer-social-link" title="Instagram">
+                <img src="https://www.dropbox.com/scl/fi/vqayt584oli4i16ela37h/instagram-white-icon.webp?rlkey=kmlvg9oy78dyfy115shmtsr7e&st=0z54w1rb&dl=1" alt="Instagram">
+              </a>
+              <a href="#" class="blue-layer-social-link" title="Facebook">
+                <img src="https://www.dropbox.com/scl/fi/pay7c8vo5xnt0syfwpowv/facebook-app-round-white-icon.webp?rlkey=svhxzcrct0hc3o8ta98lpeieq&st=a6orxjrm&dl=1" alt="Facebook">
+              </a>
+            </div>
+          </div>
+          <p class="blue-layer-description">
+            DestinyRewards is a digital marketplace for gaming products, offering great deals, exclusive rewards, and affordable prices. We're happy to have you as part of our community!
+          </p>
+        </div>
+
+        <div class="blue-layer-right">
+          <div class="blue-layer-nav-card">
+            <div class="blue-layer-nav-grid">
+              <a href="index.html" class="blue-layer-nav-link">HOME</a>
+              <a href="mailto:support@destinyrewards.com" class="blue-layer-nav-link">EMAIL US</a>
+              <a href="challenge.html" class="blue-layer-nav-link">CHALLENGE</a>
+              <a href="buy.html" class="blue-layer-nav-link">BUY</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'bid'); return false;">BID</a>
+              <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'free'); return false;">FOR FREE</a>
+            </div>
+          </div>
+          <div class="blue-layer-rights">
+            Ⓒ 2026 DESTINY REWARDS. All Rights Reserved
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Backdrop Overlay -->
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+
+  <!-- Liquid Glass Centered Modal Message Panel -->
+  <div class="side-message-panel" id="side-message-panel">
+    <button class="side-message-close" id="close-side-message">&times;</button>
+    <img src="images/bid_unavailable.png" alt="Bid Section Coming Soon" class="modal-image-only">
+    <a href="https://t.me/Destinyrewards_bot" target="_blank" class="modal-telegram-overlay-link" aria-label="Join Telegram"></a>
+  </div>
+
+  <!-- Real-time Firestore Query logic -->
+  <script type="module">
+    // Map titles to Dropbox URLs for matching thumbnails
+    function getProductImage(productTitle) {
+      const title = (productTitle || "").toLowerCase();
+      if (title.includes("premium") && title.includes("raiders")) {
+        return "https://www.dropbox.com/scl/fi/27pxn9krdm0mg99egbrf2/ChatGPT-Image-2-juil.-2026-17_25_59.png?rlkey=c70vl6vvit6h71s7ifwextro6&st=zwzs1m7l&dl=1";
+      }
+      if (title.includes("premium")) {
+        if (title.includes("1x")) return "https://www.dropbox.com/scl/fi/5nbb9o69m77rk5v1q1u2t/ChatGPT-Image-2-juil.-2026-21_58_47.png?rlkey=69amhmy7w6kr1qfrfvp09k4x4&st=pweg7s7t&e=1&dl=1";
+        if (title.includes("2x")) return "https://www.dropbox.com/scl/fi/hq7cbrazuh0z92rm0bvar/ChatGPT-Image-2-juil.-2026-22_01_25.png?rlkey=u7n22rspxw8wzy5qc881cnd1t&st=d36q3tmp&e=1&dl=1";
+        if (title.includes("3x")) return "https://www.dropbox.com/scl/fi/gogkf1r8ob180cymp6qb3/ChatGPT-Image-2-juil.-2026-22_09_13.png?rlkey=wxe0w0d768jifw648zkdctdmm&st=rvcbli3b&dl=1";
+        if (title.includes("5x")) return "https://www.dropbox.com/scl/fi/uxhfltml808wmctoats2d/ChatGPT-Image-2-juil.-2026-22_12_42.png?rlkey=t3xw8z0leqtudviq7t1bxg40b&st=ixin1mmi&dl=1";
+        if (title.includes("10x")) return "https://www.dropbox.com/scl/fi/zneyfj0m59tfn41ma9gvd/ChatGPT-Image-Jul-2-2026-11_35_54-PM.png?rlkey=4yzjodyvavjyesubhr1l3794d&st=yoi1m6f6&dl=1";
+      }
+      if (title.includes("raiders")) {
+        if (title.includes("1x")) return "https://www.dropbox.com/scl/fi/rldkidinhmj4dhsgg7pz0/ChatGPT-Image-3-juil.-2026-11_47_31.png?rlkey=enox6cwwyn7m2g6wbvjdcnc0w&st=46c9j8j9&dl=1";
+        if (title.includes("2x")) return "https://www.dropbox.com/scl/fi/1w8vwqgkptipdzy4x8hfa/ChatGPT-Image-3-juil.-2026-11_50_28.png?rlkey=zo8z67s51333cvj9j9yl4zh31&st=asws56sb&dl=1";
+      }
+      if (title.includes("expedition")) {
+        if (title.includes("1x")) return "https://www.dropbox.com/scl/fi/v3o8m8owe9833orjoyhs9/EX-X1.png?rlkey=fs5lqr3431eysn4q1qb5s0b0b&st=sf5wdwzh&dl=1";
+        if (title.includes("2x")) return "https://www.dropbox.com/scl/fi/c86vmevgk30upcpqe03d3/EX-X2.png?rlkey=65ok6upzyp4rf9gpq8b99so3k&st=7ayfn19m&dl=1";
+        if (title.includes("4x")) return "https://www.dropbox.com/scl/fi/t5e3uf4nofmz95ad70vvd/ChatGPT-Image-3-juil.-2026-03_34_14.png?rlkey=krywqss94vbugfnb7gnepfpla&st=n7451yck&dl=1";
+      }
+      if (title.includes("kingdom")) {
+        if (title.includes("1x")) return "https://www.dropbox.com/scl/fi/lo9btvpa2ibkm3df6oc1e/ChatGPT-Image-3-juil.-2026-11_04_18.png?rlkey=drar8uzbhbw5pnjauf552fn09&st=1p1avtgb&dl=1";
+        if (title.includes("3x")) return "https://www.dropbox.com/scl/fi/imldxys8mrea1h8n6hyyp/CRI-3X.png?rlkey=72sv5j0vnf5d8zlhdu7kd0wyx&st=vqvlyna0&dl=1";
+        if (title.includes("5x")) return "https://www.dropbox.com/scl/fi/1qh6bos60prtutuj72ox9/CRI-5X.png?rlkey=f042edoqg4rx471rru9psqtm8&st=w8vw2wzn&dl=1";
+        if (title.includes("10x")) return "https://www.dropbox.com/scl/fi/nwsgzh9nhu7ri7jmcfdav/CRI-10X.png?rlkey=kf7g5m555d2yqotxic5xby6hf&st=kumdu80u&dl=1";
+        if (title.includes("15x")) return "https://www.dropbox.com/scl/fi/5zbwtsxnpmjkot4j7me0e/CRI-15X.png?rlkey=jcwpwm8e5yjz2uj42mbxgkp54&st=k3vv3tww&dl=1";
+      }
+      return "https://www.dropbox.com/scl/fi/5nbb9o69m77rk5v1q1u2t/ChatGPT-Image-2-juil.-2026-21_58_47.png?rlkey=69amhmy7w6kr1qfrfvp09k4x4&st=pweg7s7t&e=1&dl=1"; // fallback
+    }
+
+    async function loadOrders(user) {
+      const userEmail = user ? user.email : "";
+      const loadingEl = document.getElementById("history-loading");
+      const gridEl = document.getElementById("history-grid");
+      const emptyEl = document.getElementById("history-empty-state");
+      
+      loadingEl.style.display = "flex";
+      gridEl.style.display = "none";
+      emptyEl.style.display = "none";
+
+      try {
+        const db = window.db;
+        if (!db) {
+          throw new Error("Firestore not initialized");
+        }
+
+        const ordersMap = new Map();
+        const collRef = window.collection(db, "orders");
+        
+        // Execute queries to fetch matching orders regardless of field and case style
+        const queries = [
+          window.query(collRef, window.where("delivered email", "==", userEmail.toLowerCase())),
+          window.query(collRef, window.where("delivered email", "==", userEmail.toUpperCase())),
+          window.query(collRef, window.where("delivered email", "==", userEmail)),
+          window.query(collRef, window.where("email", "==", userEmail.toLowerCase())),
+          window.query(collRef, window.where("email", "==", userEmail.toUpperCase())),
+          window.query(collRef, window.where("email", "==", userEmail))
+        ];
+
+        for (const q of queries) {
+          const snap = await window.getDocs(q);
+          snap.forEach(doc => {
+            ordersMap.set(doc.id, { id: doc.id, ...doc.data() });
+          });
+        }
+
+        const orders = Array.from(ordersMap.values());
+
+        // Update user's last history view time in Firestore users collection (allowed by security rules)
+        if (user && user.uid && window.setDoc && window.doc) {
+          try {
+            const userRef = window.doc(db, "users", user.uid);
+            await window.setDoc(userRef, {
+              lastHistoryViewTime: new Date().toISOString()
+            }, { merge: true });
+            console.log("[ORDER NOTIFICATION] lastHistoryViewTime updated in users collection");
+          } catch (err) {
+            console.warn("Failed to update lastHistoryViewTime in Firestore:", err);
+          }
+        }
+
+        // Sort by timestamp newest first
+        orders.sort((a, b) => {
+          const tA = new Date(a.time || 0);
+          const tB = new Date(b.time || 0);
+          return tB - tA;
+        });
+
+        const emailLower = userEmail.toLowerCase();
+        localStorage.setItem(`order_dot_cleared_${emailLower}`, "true");
+        localStorage.setItem("order_dot_cleared", "true");
+        localStorage.setItem("has_new_order_placed", "false");
+        console.log("[ORDER NOTIFICATION] Notification cleared");
+        
+        if (orders.length > 0) {
+          const latestOrderId = orders[0].id || orders[0].Hash_TXID || orders[0]["transaction id"] || "latest";
+          localStorage.setItem(`order_red_dot_seen_${emailLower}_${latestOrderId}`, "true");
+        }
+        
+        const redDot = document.getElementById("order-history-red-dot");
+        if (redDot) redDot.style.display = "none";
+
+        loadingEl.style.display = "none";
+
+        if (orders.length === 0) {
+          emptyEl.style.display = "flex";
+          return;
+        }
+
+        gridEl.innerHTML = "";
+        
+        orders.forEach(order => {
+          const title = order.product || "Unknown Game Product";
+          const amount = order.amount || 0;
+          const status = (order.orderStatus || "").toLowerCase();
+          const orderId = order.orderId || order["transaction id"] || order.id || "N/A";
+          
+          let statusText = "PAYMENT VERIFICATION";
+          let statusGradient = "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)";
+          let statusShadow = "rgba(245, 158, 11, 0.4)";
+
+          if (status === "completed" || status === "success" || status === "shipped") {
+            statusText = "SHIPPED";
+            statusGradient = "linear-gradient(135deg, #10b981 0%, #047857 100%)";
+            statusShadow = "rgba(16, 185, 129, 0.4)";
+          } else if (status === "declined" || status === "failed" || status === "rejected" || status === "not completed") {
+            statusText = "REJECTED";
+            statusGradient = "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+            statusShadow = "rgba(239, 68, 68, 0.4)";
+          }
+
+          let discountText = "13.1% DISCOUNT";
+          let stockText = "1 LEFT";
+          
+          if (title.toLowerCase().includes("10x")) {
+            discountText = "18.5% DISCOUNT";
+            stockText = "2 LEFT";
+          } else if (title.toLowerCase().includes("5x")) {
+            discountText = "15.0% DISCOUNT";
+            stockText = "5 LEFT";
+          } else if (title.toLowerCase().includes("3x")) {
+            discountText = "12.0% DISCOUNT";
+            stockText = "12 LEFT";
+          }
+
+          const txId = order["transaction id"] || order["transaction_id"] || order.transactionId || order.orderId || order.id || order.Hash_TXID || "N/A";
+
+          let formattedTime = "N/A";
+          const orderTimeRaw = order.time || order.created_at || order["created at"] || order.date;
+          if (orderTimeRaw) {
+            try {
+              const d = new Date(orderTimeRaw);
+              if (!isNaN(d.getTime())) {
+                formattedTime = d.toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit"
+                });
+              } else {
+                formattedTime = String(orderTimeRaw);
+              }
+            } catch (e) {
+              formattedTime = String(orderTimeRaw);
+            }
+          }
+
+          let statusIconSvg = "";
+          if (status === "completed" || status === "success" || status === "shipped") {
+            statusIconSvg = `
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 3px; display: inline-block; vertical-align: middle;">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            `;
+          } else if (status === "declined" || status === "failed" || status === "rejected" || status === "not completed") {
+            statusIconSvg = `
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 3px; display: inline-block; vertical-align: middle;">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            `;
+          } else {
+            statusIconSvg = `
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 3px; display: inline-block; vertical-align: middle;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            `;
+          }
+
+          const card = document.createElement("div");
+          const is96x = title.toUpperCase().includes("96X");
+          card.className = is96x ? "premium-history-card premium-card-gold" : "premium-history-card premium-card-blue";
+          
+          card.innerHTML = `
+            <!-- Top Section: Product Image (100% width) -->
+            <div class="premium-card-thumbnail-container">
+              <img src="${getProductImage(title)}" alt="${title}" class="premium-card-thumbnail">
+            </div>
+            
+            <!-- Title (Full untruncated) -->
+            <h3 class="premium-card-title">${title}</h3>
+            
+            <!-- Order Info Container: TRANSACTION ID, Time, Price -->
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px; padding: 12px 14px; background: rgba(0, 0, 0, 0.35); border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 15px rgba(0,0,0,0.4); box-sizing: border-box;">
+              <div style="font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 800; font-style: italic; color: #d4af37; letter-spacing: 0.3px; display: flex; align-items: center; gap: 6px; word-break: break-all;">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span>TRANSACTION ID: ${txId}</span>
+              </div>
+              <div style="font-family: 'Montserrat', sans-serif; font-size: 0.72rem; font-weight: 700; font-style: italic; color: rgba(255, 255, 255, 0.8); letter-spacing: 0.2px; display: flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>TIME: ${formattedTime}</span>
+              </div>
+              <div style="font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 900; font-style: italic; color: #3b82f6; letter-spacing: 0.2px; display: flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <span>PRICE: ${amount}$</span>
+              </div>
+            </div>
+            
+            <!-- Action Row: Status Label & Premium Button -->
+            <div class="premium-card-action">
+              <div class="premium-card-status-label">Status :</div>
+              <div class="premium-card-btn" style="background: ${statusGradient}; box-shadow: 0 4px 20px ${statusShadow}; border: 1px solid rgba(255, 255, 255, 0.25);">
+                ${statusIconSvg}
+                <span>${statusText}</span>
+              </div>
+            </div>
+          `;
+          gridEl.appendChild(card);
+        });
+
+        gridEl.style.display = "grid";
+
+      } catch (err) {
+        console.error("Error loading order history:", err);
+        loadingEl.style.display = "none";
+        emptyEl.style.display = "flex";
+        emptyEl.querySelector("p").textContent = "Failed to load order history. Please try again later.";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const checkAuthInterval = setInterval(() => {
+        if (window.firebaseAuth) {
+          clearInterval(checkAuthInterval);
+          
+          const auth = window.firebaseAuth;
+          
+          window.onAuthStateChanged(auth, (user) => {
+            const loginNotice = document.getElementById("history-login-notice");
+            const loadingEl = document.getElementById("history-loading");
+            const emptyEl = document.getElementById("history-empty-state");
+            const gridEl = document.getElementById("history-grid");
+
+            if (user) {
+              loginNotice.style.display = "none";
+              loadOrders(user);
+            } else {
+              loadingEl.style.display = "none";
+              gridEl.style.display = "none";
+              emptyEl.style.display = "none";
+              loginNotice.style.display = "flex";
+            }
+          });
+        }
+      }, 100);
+    });
+  </script>
+
+</body>
+
+</html>

@@ -5,6 +5,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Destiny Rewards</title>
+  <meta property="og:site_name" content="Destiny Rewards">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Destiny Rewards",
+    "alternateName": "destinyrewards.store",
+    "url": "https://www.destinyrewards.store/"
+  }
+  </script>
   <meta name="description" content="Destiny Rewards Landing Page">
   <!-- Google Fonts: Montserrat Heavy Italic & Bangers -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -831,9 +844,22 @@
   <!-- Hero Video Section -->
   <section class="hero-video-section">
     <div class="video-container">
-      <video id="gameplay-video" autoplay muted loop playsinline>
+      <video id="gameplay-video" autoplay muted loop playsinline preload="auto">
         <source src="images/gameplay.mp4" type="video/mp4">
       </video>
+      <script>
+        // Force immediate video play on load
+        (function() {
+          const video = document.getElementById('gameplay-video');
+          if (video) {
+            video.play().catch(function(err) {
+              console.log("Autoplay was prevented or delayed:", err);
+            });
+            document.addEventListener('DOMContentLoaded', function() { video.play().catch(() => {}); });
+            window.addEventListener('load', function() { video.play().catch(() => {}); });
+          }
+        })();
+      </script>
     </div>
 
     <!-- CTA Overlay -->

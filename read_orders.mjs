@@ -3,7 +3,7 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBOCEyQN4zcZyNTWhO9-mN1-sBxM3RSywI",
-  authDomain: "destiny-rewards-f3a5d.firebaseapp.com",
+  authDomain: "www.destinyrewards.store",
   projectId: "destiny-rewards-f3a5d",
   storageBucket: "destiny-rewards-f3a5d.firebasestorage.app",
   messagingSenderId: "650427918746",

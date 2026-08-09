@@ -1,9 +1,16 @@
 {
+  "cleanUrls": true,
   "outputDirectory": ".",
-  "rewrites": [
+  "builds": [
     {
-      "source": "/__/auth/:match*",
-      "destination": "https://destiny-rewards-f3a5d.firebaseapp.com/__/auth/:match*"
+      "src": "**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/__/auth/(.*)",
+      "dest": "https://destiny-rewards-f3a5d.firebaseapp.com/__/auth/$1"
     }
   ]
 }

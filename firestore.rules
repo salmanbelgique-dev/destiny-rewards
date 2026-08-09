@@ -17,10 +17,10 @@ service cloud.firestore {
       allow create: if true;
       allow get: if true;
 
-      // Nobody can modify or delete orders from the browser
-      allow update: if false;
+      // Allow listing to let the checkout page count documents for sequential order IDs
+      allow list: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['Hash_TXID', 'orderViewed']);
       allow delete: if false;
-      allow list: if false;
     }
 
     // 4. Rule for reviews collection (Public read, authenticated write)

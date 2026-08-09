@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Destiny Rewards - Discount Deals</title>
   <meta name="description" content="Destiny Rewards Exclusive Discount Store">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
   <!-- Google Fonts: Montserrat Heavy Italic & Bangers -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,6 +83,29 @@
       margin-top: 12px;
       text-transform: uppercase;
       box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    }
+    .buy-product-card {
+      position: relative !important;
+      overflow: hidden !important;
+    }
+    .discount-ribbon {
+      position: absolute;
+      top: 15px;
+      right: -31px;
+      background: linear-gradient(135deg, #ff3b30 0%, #d32f2f 100%);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 0.85rem;
+      padding: 4px 32px;
+      transform: rotate(45deg);
+      z-index: 5;
+      box-shadow: 0 2px 8px rgba(255, 0, 0, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
   </style>
   <!-- Lucide Icons CDN -->
@@ -190,6 +215,7 @@
           
           <!-- Product Card 1: Lucky Premium Game 1X Edition -->
           <div class="buy-product-card">
+            <div class="discount-ribbon">-5%</div>
             <div class="buy-product-card-inner">
               <div class="buy-product-thumbnail-container">
                 <img src="https://www.dropbox.com/scl/fi/5nbb9o69m77rk5v1q1u2t/ChatGPT-Image-2-juil.-2026-21_58_47.png?rlkey=69amhmy7w6kr1qfrfvp09k4x4&st=pweg7s7t&e=1&dl=1" alt="Lucky Premium Game 1X Edition" class="buy-product-thumbnail">
@@ -214,6 +240,7 @@
 
           <!-- Product Card 2: Lucky Raiders Game 1X -->
           <div class="buy-product-card">
+            <div class="discount-ribbon">-5%</div>
             <div class="buy-product-card-inner">
               <div class="buy-product-thumbnail-container">
                 <img src="https://www.dropbox.com/scl/fi/rldkidinhmj4dhsgg7pz0/ChatGPT-Image-3-juil.-2026-11_47_31.png?rlkey=enox6cwwyn7m2g6wbvjdcnc0w&st=46c9j8j9&dl=1" alt="Lucky Raiders Game 1X" class="buy-product-thumbnail">
@@ -238,6 +265,7 @@
 
           <!-- Product Card 3: Lucky Expedition Game 1X -->
           <div class="buy-product-card">
+            <div class="discount-ribbon">-5%</div>
             <div class="buy-product-card-inner">
               <div class="buy-product-thumbnail-container">
                 <img src="https://www.dropbox.com/scl/fi/v3o8m8owe9833orjoyhs9/EX-X1.png?rlkey=fs5lqr3431eysn4q1qb5s0b0b&st=sf5wdwzh&dl=1" alt="Lucky Expedition Game 1X" class="buy-product-thumbnail">
@@ -262,6 +290,7 @@
 
           <!-- Product Card 4: Lucky kingdom Game 1X -->
           <div class="buy-product-card">
+            <div class="discount-ribbon">-5%</div>
             <div class="buy-product-card-inner">
               <div class="buy-product-thumbnail-container">
                 <img src="https://www.dropbox.com/scl/fi/lo9btvpa2ibkm3df6oc1e/ChatGPT-Image-3-juil.-2026-11_04_18.png?rlkey=drar8uzbhbw5pnjauf552fn09&st=1p1avtgb&dl=1" alt="Lucky kingdom Game 1X" class="buy-product-thumbnail">
@@ -416,10 +445,11 @@
       const basePrice = 3.00;
       const computedPrice = (basePrice - (basePrice * pct / 100)).toFixed(2);
 
-      // Render updated prices in products
+      // Render updated prices and discount ribbons in products
       document.querySelectorAll(".buy-product-card").forEach(card => {
         const origPriceEl = card.querySelector(".buy-product-original-price");
         const currPriceEl = card.querySelector(".buy-product-price");
+        const ribbonEl = card.querySelector(".discount-ribbon");
 
         if (origPriceEl) {
           origPriceEl.textContent = "3$";
@@ -428,6 +458,9 @@
         }
         if (currPriceEl) {
           currPriceEl.textContent = computedPrice + "$";
+        }
+        if (ribbonEl) {
+          ribbonEl.textContent = `-${pct}%`;
         }
       });
     });

@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Destiny Rewards - Crypto Payment</title>
   <meta name="description" content="Destiny Rewards Crypto Payment Page">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
   <!-- Google Fonts: Montserrat Heavy Italic & Bangers -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -780,8 +782,58 @@
       }
     }
 
-    // 6. Confirm Payment Redirect
+    // 6. Confirm Payment Redirect - Opens the Verify Modal
     async function confirmCryptoPayment() {
+      openVerifyModal();
+    }
+
+    function openVerifyModal() {
+      const modal = document.getElementById("verify-modal");
+      if (modal) {
+        modal.style.display = "flex";
+        // Force repaint
+        void modal.offsetWidth;
+        modal.style.opacity = "1";
+        modal.style.pointerEvents = "auto";
+        // Auto-focus input
+        const input = document.getElementById("tx-hash-input");
+        if (input) input.focus();
+        
+        // Re-trigger Lucide icons to draw the shield-check icon inside the modal
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      }
+    }
+
+    function closeVerifyModal() {
+      const modal = document.getElementById("verify-modal");
+      if (modal) {
+        modal.style.opacity = "0";
+        modal.style.pointerEvents = "none";
+        setTimeout(() => {
+          modal.style.display = "none";
+        }, 300);
+      }
+    }
+
+    async function submitVerifyHash() {
+      const hashInput = document.getElementById("tx-hash-input");
+      const hashValue = hashInput ? hashInput.value.trim() : "";
+      
+      if (!hashValue) {
+        alert("Please enter a valid Transaction Hash or TXID to verify your payment.");
+        return;
+      }
+
+      // Add a loading indicator to the button
+      const submitBtn = document.querySelector("#verify-modal button[onclick='submitVerifyHash()']");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = "0.7";
+        submitBtn.textContent = "Verifying...";
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
       const txId = urlParams.get("txid") || localStorage.getItem("payment_txid") || "";
       const email = urlParams.get("email") || localStorage.getItem("checkout_email") || "you@example.com";
@@ -796,30 +848,99 @@
       const walletAddressInput = document.getElementById("wallet-address");
       const walletAddr = walletAddressInput ? walletAddressInput.value : "";
 
-      // Ensure order status is updated to "pending" with exact amount in Firestore orders collection
-      if (txId && window.db && window.doc && window.setDoc) {
+      // Update only the Hash_TXID field in Firestore orders collection
+      if (txId && window.db && window.doc && window.updateDoc) {
         try {
           const orderRef = window.doc(window.db, "orders", txId);
-          await window.setDoc(orderRef, {
-            "transaction id": txId,
-            "delivered email": email,
-            product: title,
-            amount: numericAmount,
-            currency: selectedCrypto,
-            network: selectedNetwork,
-            wallet: walletAddr,
-            orderStatus: "pending",
-            time: new Date().toISOString()
-          }, { merge: true });
-          console.log("Firestore order set to pending with amount:", numericAmount);
+          await window.updateDoc(orderRef, {
+            Hash_TXID: hashValue
+          });
+          console.log("Firestore order updated with Hash_TXID:", hashValue);
+          
+          console.log("[ORDER NOTIFICATION] Order created");
+          localStorage.setItem("has_new_order_placed", "true");
+          localStorage.setItem("order_dot_cleared", "false");
+          const emailInput = localStorage.getItem("checkout_email");
+          if (emailInput) {
+            localStorage.setItem(`order_dot_cleared_${emailInput.toLowerCase()}`, "false");
+          }
+          console.log("[ORDER NOTIFICATION] Notification set");
         } catch (err) {
           console.warn("Notice: Order status save warning:", err);
         }
       }
 
-      window.location.href = `waiting.html?txid=${encodeURIComponent(txId)}&email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}&orderStatus=pending`;
+      window.location.href = `waiting.html?txid=${encodeURIComponent(txId)}&email=${encodeURIComponent(email)}&title=${encodeURIComponent(title)}&orderStatus=pending&Hash_TXID=${encodeURIComponent(hashValue)}`;
     }
   </script>
+
+  <!-- Liquid Glass Verification Modal -->
+  <div id="verify-modal" style="display: none; position: fixed; inset: 0; z-index: 999999; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
+    <!-- Blurred Backdrop overlay -->
+    <div onclick="closeVerifyModal()" style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);"></div>
+    
+    <!-- Liquid Glass Rectangular Panel -->
+    <div class="modal-glass-panel" style="position: relative; width: 90%; max-width: 440px; background: rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 32px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px;">
+      <!-- Glowing background ornament -->
+      <div style="position: absolute; top: -50px; left: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%); pointer-events: none;"></div>
+      <div style="position: absolute; bottom: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, transparent 70%); pointer-events: none;"></div>
+
+      <!-- Icon Header -->
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);">
+        <i data-lucide="shield-check" style="color: #6366f1; width: 32px; height: 32px; stroke-width: 2.5;"></i>
+      </div>
+
+      <!-- Content -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <h3 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.4rem; color: #ffffff; letter-spacing: 0.5px; margin: 0;">VERIFY YOUR PAYMENT</h3>
+        <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); line-height: 1.4; margin: 0; padding: 0 10px;">To speed up confirmation, please enter the transaction Hash / TXID of your sent payment below.</p>
+      </div>
+
+      <!-- Input field wrapper -->
+      <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left;">
+        <label for="tx-hash-input" style="font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">Transaction Hash / TXID</label>
+        <input type="text" id="tx-hash-input" placeholder="e.g. 0x71C7656EC7ab88b098defB751B7401B5f..." style="width: 100%; padding: 14px 18px; border-radius: 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1); color: #ffffff; font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; box-sizing: border-box; transition: all 0.3s ease; outline: none;" onfocus="this.style.borderColor='rgba(99, 102, 241, 0.7)'; this.style.boxShadow='0 0 15px rgba(99, 102, 241, 0.25)';" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.boxShadow='none';">
+      </div>
+
+      <!-- Action buttons -->
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+        <button onclick="submitVerifyHash()" style="width: 100%; padding: 14px 20px; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; background: #6366f1; border: none; color: #ffffff; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);" onmouseover="this.style.background='#5046e5'; this.style.boxShadow='0 6px 20px rgba(99, 102, 241, 0.6)';" onmouseout="this.style.background='#6366f1'; this.style.boxShadow='0 4px 15px rgba(99, 102, 241, 0.4)';">
+          SUBMIT & VERIFY
+        </button>
+        <button onclick="closeVerifyModal()" style="width: 100%; padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); transition: all 0.2s ease;" onmouseover="this.style.color='#ffffff'; this.style.borderColor='rgba(255,255,255,0.3)';" onmouseout="this.style.color='rgba(255,255,255,0.5)'; this.style.borderColor='rgba(255,255,255,0.1)';">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .modal-glass-panel {
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.15), 0 20px 50px rgba(0, 0, 0, 0.5);
+      animation: modalZoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, borderGlowPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes modalZoom {
+      from { transform: scale(0.9) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    @keyframes borderGlowPulse {
+      0% {
+        border-color: rgba(59, 130, 246, 0.25);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.15), 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+      50% {
+        border-color: rgba(59, 130, 246, 0.85);
+        box-shadow: 0 0 25px rgba(59, 130, 246, 0.6), 0 20px 50px rgba(0, 0, 0, 0.6);
+      }
+      100% {
+        border-color: rgba(59, 130, 246, 0.25);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.15), 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+    }
+  </style>
 </body>
 
 </html>

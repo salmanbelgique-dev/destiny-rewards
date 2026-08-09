@@ -139,6 +139,7 @@ function initNavigationBubble() {
   const path = window.location.pathname;
   const isChallengePage = path.includes('challenge.html') || path.endsWith('/challenge') || path.includes('/challenge.html');
   const isBuyPage = path.includes('buy.html') || path.endsWith('/buy') || path.includes('/buy.html') ||
+                    path.includes('history.html') || path.endsWith('/history') || path.includes('/history.html') ||
                     path.includes('discount-d9f2e3a8b4.html') || path.includes('discount-d9f2e3a8b4') ||
                     path.includes('checkout.html') || path.endsWith('/checkout') || path.includes('/checkout.html');
   const isHomePage = !isChallengePage && !isBuyPage;
@@ -1047,6 +1048,10 @@ function goToBuySection() {
   }
 }
 
+const winSongAudio = new Audio('images/win-song.mp3');
+winSongAudio.preload = "auto";
+let wasEventSongPlaying = false;
+
 // Triggers the 3D playing card flip animation with custom win/lose textures
 function triggerCardAnimation(isWin, discountText) {
   const frontImg = document.getElementById("joker-card-front-img");
@@ -1072,10 +1077,28 @@ function triggerCardAnimation(isWin, discountText) {
     }
   }
 
-  if (jokerOverlay) {
+    if (jokerOverlay) {
     jokerOverlay.classList.remove("active");
     void jokerOverlay.offsetWidth; // Force CSS repaint to re-trigger the CSS keyframe animation
     jokerOverlay.classList.add("active");
+
+    // Pause background event song to make card display audio clearer
+    if (eventSong && !eventSong.paused) {
+      wasEventSongPlaying = true;
+      eventSong.pause();
+      if (typeof updateSpeakerBtnUI === "function") {
+        updateSpeakerBtnUI(false);
+      }
+    } else {
+      wasEventSongPlaying = false;
+    }
+
+    if (isWin) {
+      if (winSongAudio) {
+        winSongAudio.currentTime = 0;
+        winSongAudio.play().catch(err => console.log("Win song blocked:", err));
+      }
+    }
 
     // Custom card swipe sound for entry is now triggered early in spinWheel() for better sync
 
@@ -1395,6 +1418,34 @@ function initCooldown() {
   if (cooldownInterval) clearInterval(cooldownInterval);
   cooldownInterval = setInterval(updateCooldownTimer, 1000);
 }
+
+// Resets spin cooldown for testing purposes
+function resetSpinCooldown() {
+  localStorage.removeItem("spinCooldownEnd");
+  localStorage.removeItem("activeDiscount");
+  
+  const startChallengeBtn = document.getElementById("start-challenge-btn");
+  if (startChallengeBtn) {
+    startChallengeBtn.textContent = "BUY";
+  }
+  
+  const timerEl = document.getElementById("cooldown-timer");
+  if (timerEl) {
+    timerEl.style.visibility = "hidden";
+    timerEl.innerHTML = "&nbsp;";
+  }
+  
+  const spinBtn = document.getElementById("spin-btn");
+  if (spinBtn) {
+    spinBtn.disabled = false;
+    spinBtn.style.opacity = "1";
+    spinBtn.style.cursor = "pointer";
+    spinBtn.innerHTML = "SPIN";
+  }
+  
+  alert("Cooldown reset successfully! You can spin the wheel again.");
+}
+window.resetSpinCooldown = resetSpinCooldown;
 
 // Auto-initialize Spin Wheel when loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -2544,6 +2595,12 @@ function initEventSong() {
   eventSong = new Audio('images/song-of-event.mp3?v=1');
   eventSong.loop = true;
 
+  const isMutedPref = localStorage.getItem("eventSongMuted") === "true";
+  if (isMutedPref) {
+    updateSpeakerBtnUI(false);
+    return; // Don't try to play if they muted it manually before
+  }
+
   // Try to autoplay
   const playPromise = eventSong.play();
   if (playPromise !== undefined) {
@@ -2554,18 +2611,18 @@ function initEventSong() {
       console.warn("Autoplay blocked by browser. Music will start on user interaction.", err);
       updateSpeakerBtnUI(false);
       
-      // Auto-start on first user interaction with the document
+      // Auto-start on first user interaction with the document (using capture phase)
       const startMusicOnInteraction = () => {
-        if (eventSong && eventSong.paused) {
+        if (eventSong && eventSong.paused && localStorage.getItem("eventSongMuted") !== "true") {
           eventSong.play().then(() => {
             updateSpeakerBtnUI(true);
           }).catch(e => console.log("Failed to start on interaction:", e));
         }
-        document.removeEventListener('click', startMusicOnInteraction);
-        document.removeEventListener('keydown', startMusicOnInteraction);
+        document.removeEventListener('click', startMusicOnInteraction, true);
+        document.removeEventListener('keydown', startMusicOnInteraction, true);
       };
-      document.addEventListener('click', startMusicOnInteraction);
-      document.addEventListener('keydown', startMusicOnInteraction);
+      document.addEventListener('click', startMusicOnInteraction, true);
+      document.addEventListener('keydown', startMusicOnInteraction, true);
     });
   }
 }
@@ -2575,11 +2632,15 @@ function toggleEventSong() {
   
   if (eventSong.paused) {
     eventSong.play()
-      .then(() => updateSpeakerBtnUI(true))
+      .then(() => {
+        updateSpeakerBtnUI(true);
+        localStorage.setItem("eventSongMuted", "false");
+      })
       .catch(err => console.log("Playback failed:", err));
   } else {
     eventSong.pause();
     updateSpeakerBtnUI(false);
+    localStorage.setItem("eventSongMuted", "true");
   }
 }
 
@@ -2814,6 +2875,21 @@ function closeJokerOverlay() {
   const overlay = document.getElementById("joker-next-time-overlay");
   if (overlay) {
     overlay.classList.remove("active");
+  }
+  if (winSongAudio) {
+    winSongAudio.pause();
+    winSongAudio.currentTime = 0;
+  }
+  // Resume background event song if it was playing before
+  if (wasEventSongPlaying && eventSong) {
+    eventSong.play()
+      .then(() => {
+        if (typeof updateSpeakerBtnUI === "function") {
+          updateSpeakerBtnUI(true);
+        }
+      })
+      .catch(err => console.log("Failed to resume background music:", err));
+    wasEventSongPlaying = false;
   }
   if (jokerOverlayTimeout) {
     clearTimeout(jokerOverlayTimeout);
@@ -3094,11 +3170,11 @@ function initCheckoutPage() {
     if (mainGrid) mainGrid.classList.add("theme-gold-borders");
   }
 
-  // Dynamically display the game photos album section if the product is a game version
+  // Dynamically display the game photos album section only for the 96X version
   const photosSection = document.getElementById("checkout-game-photos-section");
   if (photosSection) {
     const lowerTitle = (title || "").toLowerCase();
-    if (lowerTitle.includes("premium") || lowerTitle.includes("raiders") || lowerTitle.includes("expedition") || lowerTitle.includes("kingdom") || lowerTitle.includes("96x")) {
+    if (lowerTitle.includes("96x")) {
       photosSection.style.display = "block";
     } else {
       photosSection.style.display = "none";
@@ -3209,12 +3285,30 @@ function initCheckoutPage() {
         const debugAct = document.getElementById("debug-last-action");
         if (debugAct) debugAct.innerHTML = "Last Action: <span style='color: #6b8aff'>Verifying session...</span>";
 
-        getAuthenticatedUser().then(user => {
+        getAuthenticatedUser().then(async user => {
           if (!user) {
             if (debugAct) debugAct.innerHTML = "Last Action: <span style='color: #ff5555'>Auth Failed (No User)</span>";
             alert("Your login session could not be verified by Firebase. Please click the profile avatar on the top right to sign in again.");
             showGoogleLogin();
             return;
+          }
+
+          // Generate sequential order ID (e.g. DSR0001, DSR0002) using public orders_counter document in usernames collection
+          let seqOrderId = "DSR" + Math.floor(1000 + Math.random() * 9000); // fallback
+          try {
+            if (window.db && window.doc && window.getDoc && window.setDoc) {
+              const counterRef = window.doc(window.db, "usernames", "orders_counter");
+              const counterSnap = await window.getDoc(counterRef);
+              let currentCount = 0;
+              if (counterSnap.exists()) {
+                currentCount = counterSnap.data().count || 0;
+              }
+              const nextNum = currentCount + 1;
+              await window.setDoc(counterRef, { count: nextNum });
+              seqOrderId = "DSR" + String(nextNum).padStart(4, '0');
+            }
+          } catch (err) {
+            console.warn("Failed to fetch/increment order counter, using fallback:", err);
           }
 
           if (debugAct) debugAct.innerHTML = "Last Action: <span style='color: #6b8aff'>Writing document...</span>";
@@ -3241,8 +3335,6 @@ function initCheckoutPage() {
               const walletAddr = getWalletAddress(selectedCrypto, selectedNetwork);
               const rawPrice = price || "6$";
               const amountVal = parseFloat(rawPrice.replace(/[^0-9.]/g, "")) || 6;
-              const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-              const seqOrderId = `DSR${randomSuffix}`;
 
               const orderData = {
                 orderId: seqOrderId,
@@ -3255,12 +3347,20 @@ function initCheckoutPage() {
                 orderStatus: "pending",
                 wallet: walletAddr,
                 "transaction id": txId,
-                time: new Date().toISOString()
+                time: new Date().toISOString(),
+                orderViewed: false
               };
 
               firestorePromise = window.setDoc(window.doc(window.db, "orders", txId), orderData)
                 .then(() => {
                   console.log("Order document created successfully under global orders collection");
+                  console.log("[ORDER NOTIFICATION] Order created");
+                  localStorage.setItem("has_new_order_placed", "true");
+                  localStorage.setItem("order_dot_cleared", "false");
+                  if (user && user.email) {
+                    localStorage.setItem(`order_dot_cleared_${user.email.toLowerCase()}`, "false");
+                  }
+                  console.log("[ORDER NOTIFICATION] Notification set");
                   if (debugAct) debugAct.innerHTML = "Last Action: <span style='color: #25d366'>SUCCESS (Created order: " + txId + ")</span>";
                 })
                 .catch(err => {
@@ -3272,8 +3372,6 @@ function initCheckoutPage() {
             } else if (paymentMethod === "Binance Pay") {
               const rawPrice = price || "6$";
               const amountVal = parseFloat(rawPrice.replace(/[^0-9.]/g, "")) || 6;
-              const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-              const seqOrderId = `DSR${randomSuffix}`;
 
               const orderData = {
                 orderId: seqOrderId,
@@ -3286,12 +3384,20 @@ function initCheckoutPage() {
                 orderStatus: "pending",
                 wallet: binanceId,
                 "transaction id": txId,
-                time: new Date().toISOString()
+                time: new Date().toISOString(),
+                orderViewed: false
               };
 
               firestorePromise = window.setDoc(window.doc(window.db, "orders", txId), orderData)
                 .then(() => {
                   console.log("Binance Pay order document created successfully");
+                  console.log("[ORDER NOTIFICATION] Order created");
+                  localStorage.setItem("has_new_order_placed", "true");
+                  localStorage.setItem("order_dot_cleared", "false");
+                  if (user && user.email) {
+                    localStorage.setItem(`order_dot_cleared_${user.email.toLowerCase()}`, "false");
+                  }
+                  console.log("[ORDER NOTIFICATION] Notification set");
                   if (debugAct) debugAct.innerHTML = "Last Action: <span style='color: #25d366'>SUCCESS (Created Binance Pay: " + txId + ")</span>";
                 })
                 .catch(err => {
@@ -4137,6 +4243,8 @@ function initDebugPanel() {
         const filtered = combined.filter(r => {
           const key = r.id || `${r.username}_${r.timestamp}`;
           if (deletedIds.includes(key)) return false;
+          // Hide specific deleted review
+          if (key === "Ahmed Taweb_1785894843951" || (r.username === "Ahmed Taweb" && r.comment === "see")) return false;
           return (r.productKey || "default") === productKey || !r.productKey;
         });
         
@@ -4433,5 +4541,132 @@ function openPhotoModal(imageSrc) {
 }
 
 window.openPhotoModal = openPhotoModal;
+
+/* ==========================================================================
+   Order History Header Button Red Notification Dot System
+   ========================================================================== */
+function initOrderStatusNotification() {
+  const checkInterval = setInterval(() => {
+    if (window.firebaseAuth) {
+      clearInterval(checkInterval);
+      
+      const auth = window.firebaseAuth;
+      window.onAuthStateChanged(auth, async (user) => {
+        const redDot = document.getElementById("order-history-red-dot");
+        const orderHistoryBtn = document.getElementById("order-history-btn");
+        if (orderHistoryBtn && redDot) {
+          orderHistoryBtn.onclick = null; // Clear inline onclick to avoid navigation race condition
+          if (!orderHistoryBtn.dataset.hasNotificationListener) {
+            orderHistoryBtn.dataset.hasNotificationListener = "true";
+            orderHistoryBtn.addEventListener("click", () => {
+              console.log("[ORDER NOTIFICATION] Order icon clicked");
+              if (user && user.email) {
+                const emailLower = user.email.toLowerCase();
+                localStorage.setItem(`order_dot_cleared_${emailLower}`, "true");
+              }
+              localStorage.setItem("order_dot_cleared", "true");
+              localStorage.setItem("has_new_order_placed", "false");
+              redDot.style.display = "none";
+              console.log("[ORDER NOTIFICATION] Notification cleared");
+              window.location.href = 'history.html';
+            });
+          }
+        }
+        const isHistoryPage = window.location.pathname.includes("history.html");
+        
+        if (isHistoryPage) {
+          if (user && user.email) {
+            const emailLower = user.email.toLowerCase();
+            localStorage.setItem(`order_dot_cleared_${emailLower}`, "true");
+          }
+          localStorage.setItem("order_dot_cleared", "true");
+          localStorage.setItem("has_new_order_placed", "false");
+          if (redDot) redDot.style.display = "none";
+          return;
+        }
+        
+        if (!user || !user.email) return;
+        
+        console.log("[ORDER NOTIFICATION] Checking notification");
+        const emailLower = user.email.toLowerCase();
+        const hasNewOrderLocal = localStorage.getItem("has_new_order_placed") === "true";
+        const hasClearedLocal = localStorage.getItem(`order_dot_cleared_${emailLower}`) === "true" || localStorage.getItem("order_dot_cleared") === "true";
+        
+        if (hasNewOrderLocal && !hasClearedLocal) {
+          if (redDot) {
+            redDot.style.display = "block";
+            console.log("[ORDER NOTIFICATION] Dot displayed");
+          }
+        }
+        
+        try {
+          const db = window.db;
+          const { collection, query, where, getDocs, getDoc, doc } = window;
+          
+          if (!db || !collection || !query || !where || !getDocs || !getDoc || !doc) return;
+          
+          const collRef = collection(db, "orders");
+          const queries = [
+            query(collRef, where("delivered email", "==", emailLower)),
+            query(collRef, where("delivered email", "==", user.email.toUpperCase())),
+            query(collRef, where("delivered email", "==", user.email)),
+            query(collRef, where("email", "==", emailLower)),
+            query(collRef, where("email", "==", user.email.toUpperCase())),
+            query(collRef, where("email", "==", user.email))
+          ];
+          
+          const ordersMap = new Map();
+          for (const q of queries) {
+            try {
+              const snap = await getDocs(q);
+              snap.forEach((doc) => {
+                ordersMap.set(doc.id, { id: doc.id, ...doc.data() });
+              });
+            } catch (e) {}
+          }
+          
+          // Retrieve last history view time from user profile doc in Firestore (which is fully allowed by rules)
+          let lastHistoryViewTime = null;
+          try {
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+              lastHistoryViewTime = userDocSnap.data().lastHistoryViewTime || null;
+            }
+          } catch (err) {
+            console.warn("Failed to fetch lastHistoryViewTime from users collection:", err);
+          }
+
+          let hasUnseenFirestoreOrder = false;
+          ordersMap.forEach((order) => {
+            if (lastHistoryViewTime) {
+              const orderTime = new Date(order.time || 0).getTime();
+              const viewTime = new Date(lastHistoryViewTime).getTime();
+              if (orderTime > viewTime) {
+                hasUnseenFirestoreOrder = true;
+              }
+            } else {
+              hasUnseenFirestoreOrder = true;
+            }
+          });
+
+          const showDot = hasUnseenFirestoreOrder || (hasNewOrderLocal && !hasClearedLocal);
+          if (redDot) {
+            redDot.style.display = showDot ? "block" : "none";
+            if (showDot) {
+              console.log("[ORDER NOTIFICATION] Dot displayed");
+            }
+          }
+        } catch (err) {
+          console.error("Error checking order status notification dot:", err);
+        }
+      });
+    }
+  }, 300);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initOrderStatusNotification();
+});
 
 
