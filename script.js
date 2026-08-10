@@ -3181,6 +3181,149 @@ function initCheckoutPage() {
     }
   }
 
+  // Inject custom CSS for the slide-down rule alert dynamically if not already present
+  if (!document.getElementById("rule-alert-styles")) {
+    const styles = document.createElement("style");
+    styles.id = "rule-alert-styles";
+    styles.textContent = `
+      .rule-alert-container {
+        position: fixed;
+        top: 96px;
+        right: 24px;
+        z-index: 10000;
+        transform: translateX(120%);
+        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: auto;
+      }
+      .rule-alert-container.show {
+        transform: translateX(0);
+      }
+      .rule-alert-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(185, 28, 28, 0.2) 100%);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(239, 68, 68, 0.5);
+        border-radius: 12px;
+        color: #ffffff;
+        font-family: 'Montserrat', sans-serif;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        max-width: 380px;
+      }
+      .rule-alert-icon {
+        color: #ef4444;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: alertPulse 2s infinite ease-in-out;
+      }
+      .rule-alert-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .rule-alert-title {
+        font-weight: 800;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+        color: #ef4444;
+        text-transform: uppercase;
+      }
+      .rule-alert-message {
+        font-weight: 500;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        color: rgba(255, 255, 255, 0.9);
+      }
+      @keyframes alertPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.15); opacity: 0.8; }
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+
+  // Display attractive slide-down alert for rules enforcement
+  function showRuleAlert(title, message) {
+    let container = document.querySelector(".rule-alert-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.className = "rule-alert-container";
+      container.innerHTML = `
+        <div class="rule-alert-card">
+          <div class="rule-alert-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+          </div>
+          <div class="rule-alert-content">
+            <div class="rule-alert-title" id="rule-alert-title">ORDER LIMIT REACHED</div>
+            <div class="rule-alert-message" id="rule-alert-message">Only one pending order is allowed at a time. Please wait until we have reviewed and completed your previous order before placing a new one.</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(container);
+    }
+
+    const titleEl = document.getElementById("rule-alert-title");
+    const msgEl = document.getElementById("rule-alert-message");
+    if (titleEl && title) titleEl.textContent = title;
+    if (msgEl && message) msgEl.textContent = message;
+
+    // Trigger slide-in
+    setTimeout(() => {
+      container.classList.add("show");
+    }, 50);
+
+    // Auto-dismiss after 6 seconds
+    if (window.ruleAlertTimeout) {
+      clearTimeout(window.ruleAlertTimeout);
+    }
+    window.ruleAlertTimeout = setTimeout(() => {
+      container.classList.remove("show");
+    }, 6000);
+  }
+
+  // Query database in parallel for any active pending orders (by auth email and form input email)
+  async function checkHasPendingOrder(userEmail, formEmail) {
+    if (!window.db || !window.collection || !window.query || !window.where || !window.getDocs) {
+      return false;
+    }
+    
+    const collRef = window.collection(window.db, "orders");
+    const emailsToCheck = new Set();
+    if (userEmail) {
+      emailsToCheck.add(userEmail.toLowerCase());
+      emailsToCheck.add(userEmail.toUpperCase());
+      emailsToCheck.add(userEmail);
+    }
+    if (formEmail) {
+      emailsToCheck.add(formEmail.toLowerCase());
+      emailsToCheck.add(formEmail.toUpperCase());
+      emailsToCheck.add(formEmail);
+    }
+
+    const queries = [];
+    for (const email of emailsToCheck) {
+      queries.push(window.query(collRef, window.where("email", "==", email), window.where("orderStatus", "==", "pending")));
+      queries.push(window.query(collRef, window.where("delivered email", "==", email), window.where("orderStatus", "==", "pending")));
+    }
+
+    try {
+      const snapshots = await Promise.all(queries.map(q => window.getDocs(q)));
+      for (const snap of snapshots) {
+        if (!snap.empty) {
+          return true; // Found a pending order!
+        }
+      }
+    } catch (err) {
+      console.error("Error checking for pending orders:", err);
+    }
+    return false;
+  }
+
   // Wire up checkout form submissions
   const checkoutForm = document.getElementById("checkout-form");
   const binanceInput = document.getElementById("checkout-binance-id");
@@ -3293,6 +3436,15 @@ function initCheckoutPage() {
             return;
           }
 
+          // Enforce one-order-at-a-time rule (check if previous order is pending)
+          if (debugAct) debugAct.innerHTML = "Last Action: <span style='color: #6b8aff'>Checking active orders...</span>";
+          const hasPending = await checkHasPendingOrder(user.email || "", email);
+          if (hasPending) {
+            if (debugAct) debugAct.innerHTML = "Last Action: <span style='color: #ff5555'>ORDER DENIED (Pending Order Exists)</span>";
+            showRuleAlert("ORDER LIMIT REACHED", "Only one pending order is allowed at a time. Please wait until we have reviewed and completed your previous order before placing a new one.");
+            return; // Halt order creation
+          }
+
           // Generate sequential order ID (e.g. DSR0001, DSR0002) using public orders_counter document in usernames collection
           let seqOrderId = "DSR" + Math.floor(1000 + Math.random() * 9000); // fallback
           try {
@@ -3317,22 +3469,63 @@ function initCheckoutPage() {
           // Save order details to Firestore global orders collection only (and NOT in users or usernames collection)
           if (window.db && window.doc && window.setDoc) {
             if (paymentMethod === "Cryptocurrency") {
-              function getWalletAddress(crypto, network) {
+              function getWalletAddress(crypto, network, txId) {
+                const USDT_BEP20_WALLETS = [
+                  { address: "0xb8512439c19bae4bddffacb100ab5eaccdc20498" },
+                  { address: "0xbb2f78add4ec6d58c9cda97e18e6320586e8c4f6" },
+                  { address: "0x7586ef327a687372b04219ebb0200217de292ede" }
+                ];
+                const USDT_APT_WALLET = {
+                  address: "0xa131931bbd34922ff36911b72b232b5a50f86d545ed9d0a06f18615d4e89dda4"
+                };
+                const USDT_TRC20_WALLETS = [
+                  { address: "TX7Ad5D3yydmeCSYtCbfNmgERYgoeaiA56" }
+                ];
+                const USDC_SOL_WALLETS = [
+                  { address: "FcZ4RMDSLQTkb7EYmwTJkk9ewsHn3gnAVppW92mSj6aC" },
+                  { address: "DD6ZsZYASVmiev1e1MUgXfFLkJXDyAEmAFUWVu6gkX9r" }
+                ];
+                const USDC_SUI_WALLETS = [
+                  { address: "0x4c00fa4571613f2f287bc26c18fbd3255b7d706741367c9658468944b3992827" }
+                ];
+                const USDC_BEP20_WALLETS = [
+                  { address: "0x7586ef327a687372b04219ebb0200217de292ede" },
+                  { address: "0xbb2f78add4ec6d58c9cda97e18e6320586e8c4f6" }
+                ];
+
+                let charSum = 0;
+                const idStr = txId || "";
+                for (let i = 0; i < idStr.length; i++) charSum += idStr.charCodeAt(i);
+
                 if (crypto === "USDT") {
-                  if (network === "APT" || network === "BEP20") {
-                    return "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+                  if (network === "BEP20") {
+                    const walletObj = USDT_BEP20_WALLETS[charSum % USDT_BEP20_WALLETS.length];
+                    return walletObj.address;
+                  } else if (network === "APT") {
+                    return USDT_APT_WALLET.address;
+                  } else { // TRC20
+                    const walletObj = USDT_TRC20_WALLETS[charSum % USDT_TRC20_WALLETS.length];
+                    return walletObj.address;
                   }
-                  return "TY1xP8G6uA9zH8GfM8D9vT8C8sP7W8q4k9";
                 } else if (crypto === "USDC") {
-                  if (network === "BEP20" || network === "SUI") {
-                    return "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+                  if (network === "BEP20") {
+                    const walletObj = USDC_BEP20_WALLETS[charSum % USDC_BEP20_WALLETS.length];
+                    return walletObj.address;
+                  } else if (network === "SOL" || network === "Solana") {
+                    const walletObj = USDC_SOL_WALLETS[charSum % USDC_SOL_WALLETS.length];
+                    return walletObj.address;
+                  } else if (network === "SUI") {
+                    const walletObj = USDC_SUI_WALLETS[charSum % USDC_SUI_WALLETS.length];
+                    return walletObj.address;
+                  } else {
+                    const walletObj = USDC_SOL_WALLETS[charSum % USDC_SOL_WALLETS.length];
+                    return walletObj.address;
                   }
-                  return "4k3DYwMw48Ph7Sru25Bgh2CJC146wN8M5G";
                 }
                 return "";
               }
 
-              const walletAddr = getWalletAddress(selectedCrypto, selectedNetwork);
+              const walletAddr = getWalletAddress(selectedCrypto, selectedNetwork, txId);
               const rawPrice = price || "6$";
               const amountVal = parseFloat(rawPrice.replace(/[^0-9.]/g, "")) || 6;
 
@@ -3623,50 +3816,9 @@ function initCheckoutPage() {
   });
 }
 
-// Floating Diagnostic Debug Widget
+// Floating Diagnostic Debug Widget (Removed)
 function initDebugPanel() {
-  const isLocalFile = window.location.protocol === 'file:';
-  const isFirebaseLoaded = !!(window.db && window.doc && window.setDoc);
-  const isLoggedIn = localStorage.getItem("profileIsLoggedIn") === "true";
-  const profileName = localStorage.getItem("profileName") || "null";
-  const checkoutFormExists = !!document.getElementById("checkout-form");
-
-  let debugDiv = document.getElementById("antigravity-debug-panel");
-  if (!debugDiv) {
-    debugDiv = document.createElement("div");
-    debugDiv.id = "antigravity-debug-panel";
-    debugDiv.style.position = "fixed";
-    debugDiv.style.bottom = "10px";
-    debugDiv.style.right = "10px";
-    debugDiv.style.zIndex = "999999";
-    debugDiv.style.background = "rgba(0, 0, 0, 0.9)";
-    debugDiv.style.border = "2px solid #3b82f6";
-    debugDiv.style.borderRadius = "8px";
-    debugDiv.style.padding = "12px";
-    debugDiv.style.color = "#ffffff";
-    debugDiv.style.fontFamily = "monospace";
-    debugDiv.style.fontSize = "12px";
-    debugDiv.style.boxShadow = "0 4px 10px rgba(0,0,0,0.5)";
-    debugDiv.style.width = "300px";
-    document.body.appendChild(debugDiv);
-  }
-
-  const lastActionHTML = document.getElementById("debug-last-action") ? document.getElementById("debug-last-action").innerHTML : "Last Action: None";
-
-  debugDiv.innerHTML = `
-    <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #3b82f6; padding-bottom: 4px; display: flex; justify-content: space-between;">
-      <span>Checkout Diagnostic Panel</span>
-      <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: #ff5555; cursor: pointer; font-weight: bold;">[X]</button>
-    </div>
-    <div style="margin-bottom: 4px;">Protocol: <span style="color: ${isLocalFile ? '#ff5555' : '#25d366'}">${window.location.protocol}</span> ${isLocalFile ? '<b>(CORS BLOCKED!)</b>' : ''}</div>
-    <div style="margin-bottom: 4px;">Firebase SDK: <span style="color: ${isFirebaseLoaded ? '#25d366' : '#ff5555'}">${isFirebaseLoaded ? 'INITIALIZED' : 'NOT INITIALIZED'}</span></div>
-    <div style="margin-bottom: 4px;">User logged-in: <span style="color: ${isLoggedIn ? '#25d366' : '#ff5555'}">${isLoggedIn ? 'YES' : 'NO'}</span></div>
-    <div style="margin-bottom: 4px;">Username: <span style="color: #6b8aff">${profileName}</span></div>
-    <div style="margin-bottom: 4px;">Checkout Form: <span style="color: ${checkoutFormExists ? '#25d366' : '#ff5555'}">${checkoutFormExists ? 'FOUND' : 'NOT FOUND'}</span></div>
-    <div id="debug-last-action" style="margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 6px; color: #ffea00; font-size: 11px;">
-      ${lastActionHTML}
-    </div>
-  `;
+  // Removed diagnostic debug widget
 }
 
 

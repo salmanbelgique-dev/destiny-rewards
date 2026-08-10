@@ -70,19 +70,24 @@
       width: 100%;
     }
     .discount-banner-badge {
-      display: inline-block;
-      padding: 8px 20px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(107, 138, 255, 0.25) 100%);
-      border: 1px solid rgba(168, 85, 247, 0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(107, 138, 255, 0.15) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff;
       font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
-      font-size: 0.9rem;
+      font-weight: 900;
+      font-size: 1.15rem;
       letter-spacing: 1.5px;
       margin-top: 12px;
       text-transform: uppercase;
-      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
     }
     .buy-product-card {
       position: relative !important;
@@ -91,13 +96,17 @@
     .discount-ribbon {
       position: absolute;
       top: 15px;
-      right: -31px;
+      right: -22px;
+      width: 100px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: linear-gradient(135deg, #ff3b30 0%, #d32f2f 100%);
       color: #ffffff;
       font-family: 'Montserrat', sans-serif;
       font-weight: 900;
       font-size: 0.85rem;
-      padding: 4px 32px;
       transform: rotate(45deg);
       z-index: 5;
       box-shadow: 0 2px 8px rgba(255, 0, 0, 0.35);
@@ -106,6 +115,7 @@
       white-space: nowrap;
       pointer-events: none;
       border: 1px solid rgba(255, 255, 255, 0.25);
+      box-sizing: border-box;
     }
   </style>
   <!-- Lucide Icons CDN -->
@@ -125,7 +135,7 @@
   <!-- Firebase Initialization -->
   <script src="firebase.js?v=115" type="module"></script>
   <!-- JavaScript -->
-  <script src="script.js?v=115" defer></script>
+  <script src="script.js?v=116" defer></script>
 </head>
 
 <body class="buy-page-body">
@@ -344,10 +354,10 @@
               <a href="https://t.me/Destinyrewards_bot" target="_blank" class="blue-layer-social-link" title="Telegram">
                 <img src="https://www.dropbox.com/scl/fi/0c7uekuupio6rckmdf72u/telegram-white-icon.webp?rlkey=gwg7wb0xie3cr5kab7jdatjw4&st=m3d5ml2y&dl=1" alt="Telegram">
               </a>
-              <a href="#" class="blue-layer-social-link" title="Instagram">
+              <a href="https://www.instagram.com/destiny_rewards/" target="_blank" rel="noopener noreferrer" class="blue-layer-social-link" title="Instagram">
                 <img src="https://www.dropbox.com/scl/fi/vqayt584oli4i16ela37h/instagram-white-icon.webp?rlkey=kmlvg9oy78dyfy115shmtsr7e&st=0z54w1rb&dl=1" alt="Instagram">
               </a>
-              <a href="#" class="blue-layer-social-link" title="Facebook">
+              <a href="https://www.facebook.com/DestinyRewards/" target="_blank" rel="noopener noreferrer" class="blue-layer-social-link" title="Facebook">
                 <img src="https://www.dropbox.com/scl/fi/pay7c8vo5xnt0syfwpowv/facebook-app-round-white-icon.webp?rlkey=svhxzcrct0hc3o8ta98lpeieq&st=a6orxjrm&dl=1" alt="Facebook">
               </a>
             </div>
@@ -361,7 +371,7 @@
           <div class="blue-layer-nav-card">
             <div class="blue-layer-nav-grid">
               <a href="index.html" class="blue-layer-nav-link">HOME</a>
-              <a href="mailto:support@destinyrewards.com" class="blue-layer-nav-link">EMAIL US</a>
+              <a href="https://wa.me/message/YTRSS2WSIZQVI1" target="_blank" rel="noopener noreferrer" class="blue-layer-nav-link">CONTACT US</a>
               <a href="challenge.html" class="blue-layer-nav-link">CHALLENGE</a>
               <a href="buy.html" class="blue-layer-nav-link">BUY</a>
               <a href="#second-layer" class="blue-layer-nav-link" onclick="window.showSideMessage(event, 'bid'); return false;">BID</a>
@@ -429,10 +439,37 @@
         return;
       }
       
-      // Update badge
+      // Update badge with countdown timer
       const activeBadge = document.getElementById("discount-active-badge");
       if (activeBadge) {
-        activeBadge.textContent = activeDiscount + " DISCOUNT ACTIVE";
+        function updateTimer() {
+          const timestamp = parseInt(localStorage.getItem("discountTimestamp"));
+          if (!timestamp) return;
+
+          const expiryTime = timestamp + oneHour;
+          const now = Date.now();
+          const timeLeft = expiryTime - now;
+
+          if (timeLeft <= 0) {
+            localStorage.removeItem("activeDiscount");
+            localStorage.removeItem("discountTimestamp");
+            localStorage.removeItem("discountToken");
+            window.location.replace("buy.html");
+            return;
+          }
+
+          const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+          const minutesStr = String(minutes).padStart(2, '0');
+          const secondsStr = String(seconds).padStart(2, '0');
+
+          const clockSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+
+          activeBadge.innerHTML = `<span style="color: #6b8aff; font-weight: 900; margin-right: 4px;">${activeDiscount} ACTIVE</span> <span style="color: rgba(255, 255, 255, 0.65); font-weight: 700; margin-right: 6px; font-size: 0.95rem; letter-spacing: 0.5px;">FOR ONLY</span> <span style="color: #ff3b30; font-weight: 900; display: inline-flex; align-items: center; gap: 4px;">${clockSvg}${minutesStr}:${secondsStr}</span>`;
+        }
+        updateTimer();
+        setInterval(updateTimer, 1000);
       }
 
       // Calculate dynamic price
