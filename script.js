@@ -141,7 +141,8 @@ function initNavigationBubble() {
   const isBuyPage = path.includes('buy.html') || path.endsWith('/buy') || path.includes('/buy.html') ||
                     path.includes('history.html') || path.endsWith('/history') || path.includes('/history.html') ||
                     path.includes('discount-d9f2e3a8b4.html') || path.includes('discount-d9f2e3a8b4') ||
-                    path.includes('checkout.html') || path.endsWith('/checkout') || path.includes('/checkout.html');
+                    path.includes('checkout.html') || path.endsWith('/checkout') || path.includes('/checkout.html') ||
+                    path.includes('payment.html') || path.endsWith('/payment') || path.includes('/payment.html');
   const isHomePage = !isChallengePage && !isBuyPage;
 
   // Highlight HOME, CHALLENGE, or BUY on page load based on current page
@@ -1592,6 +1593,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (sidePanel) sidePanel.classList.add('active');
     if (backdrop) backdrop.classList.add('active');
+    document.body.classList.add('modal-open');
+
+    const speakerBtn = document.querySelector('.speaker-toggle-btn');
+    if (speakerBtn) {
+      speakerBtn.style.setProperty('opacity', '0', 'important');
+      speakerBtn.style.setProperty('pointer-events', 'none', 'important');
+      speakerBtn.style.setProperty('visibility', 'hidden', 'important');
+    }
 
     // Auto-close after 7 seconds
     if (autoCloseTimer) clearTimeout(autoCloseTimer);
@@ -1604,6 +1613,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e && e.stopPropagation) e.stopPropagation();
     if (sidePanel) sidePanel.classList.remove('active');
     if (backdrop) backdrop.classList.remove('active');
+    document.body.classList.remove('modal-open');
+
+    const speakerBtn = document.querySelector('.speaker-toggle-btn');
+    if (speakerBtn) {
+      speakerBtn.style.removeProperty('opacity');
+      speakerBtn.style.removeProperty('pointer-events');
+      speakerBtn.style.removeProperty('visibility');
+    }
+
     if (autoCloseTimer) clearTimeout(autoCloseTimer);
   };
 
@@ -2110,8 +2128,7 @@ function completeLogin(user, finalId, chosenName, googleName, chosenPhotoURL) {
 
 function showGoogleLogin() {
   if (!window.signInWithPopup || !window.firebaseAuth || !window.firebaseProvider) {
-    console.error("Firebase Auth SDK not fully loaded yet or Popup is unsupported.");
-    alert("Firebase Auth SDK is loading, please try again in a moment.");
+    console.warn("Firebase Auth SDK is loading, please try again in a moment.");
     return;
   }
 
@@ -2142,7 +2159,6 @@ function showGoogleLogin() {
     })
     .catch((error) => {
       console.error("Firebase Google Popup Auth failed:", error);
-      alert("Google Sign-In failed: " + error.message);
       if (signInBtn) {
         signInBtn.disabled = false;
         signInBtn.style.opacity = "1";
@@ -2169,7 +2185,6 @@ function handleRedirectResult() {
     })
     .catch((error) => {
       console.error("Redirect sign-in resolution failed:", error);
-      alert("Sign-in failed: " + error.message);
     });
 }
 
@@ -2385,6 +2400,13 @@ function syncProfileToFirebase() {
 
 function initProfileWidget() {
   const isLoggedIn = localStorage.getItem("profileIsLoggedIn") === "true";
+
+  // Hide/show order history button based on auth state
+  const orderHistoryBtn = document.getElementById("order-history-btn");
+  if (orderHistoryBtn) {
+    orderHistoryBtn.style.setProperty("display", isLoggedIn ? "flex" : "none", "important");
+  }
+
   const signupGate = document.getElementById("signup-gate");
   const container = document.getElementById("challenge-container");
   const profileWidget = document.querySelector(".user-profile-widget");

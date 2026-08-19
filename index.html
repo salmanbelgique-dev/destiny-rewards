@@ -25,7 +25,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Montserrat:ital,wght@1,900&display=swap"
     rel="stylesheet">
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=113">
+  <link rel="stylesheet" href="styles.css?v=170">
   <style>
     /* Pin the iPhone design inside the viewport */
     #second-layer {
@@ -564,40 +564,154 @@
     }
 
     @media (max-width: 950px) {
-      .phone-placeholder-glass-card {
-        display: none !important;
+      #second-layer {
+        min-height: 220vh !important;
       }
-      .phone-left-placeholder-glass-card {
-        display: none !important;
-      }
-      .phone-right-notification-card {
-        display: none !important;
-      }
-      .phone-small-glass-card {
-        display: none !important;
-      }
-    }
 
+      /* Stack container positioning */
+      html body #second-layer .second-layer-content {
+        height: calc(100vh - 60px) !important;
+        min-height: calc(100vh - 60px) !important;
+        top: 60px !important;
+        position: sticky !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+      }
 
-
-    @media (max-width: 850px) {
-      .phone-notification-card {
-        right: auto !important;
+      /* Glass Cards (Top stack) */
+      html body .phone-placeholder-glass-card,
+      html body .phone-left-placeholder-glass-card {
+        position: absolute !important;
         left: 50% !important;
-        top: auto !important;
-        bottom: 60px !important;
-        transform: translateX(-50%) translateY(40px) scale(0.9) !important;
-        width: 290px !important;
-        padding: 16px 20px !important;
-        border-radius: 24px !important;
+        right: auto !important;
+        top: 20px !important;
+        width: 310px !important;
+        height: 155px !important;
+        z-index: 12 !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transform: translateX(-50%) scale(0.85) !important;
+        transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s !important;
       }
-      
-      .phone-notification-card.active {
+
+      /* Target active state explicitly with higher specificity to bypass desktop sibling rules */
+      html body .second-layer-content .phone-placeholder-glass-card.active,
+      html body .second-layer-content .phone-left-placeholder-glass-card.active,
+      html body .phone-notification-card.active ~ .phone-placeholder-glass-card,
+      html body .phone-notification-card.active ~ .phone-left-placeholder-glass-card {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateX(-50%) scale(1) !important;
+      }
+
+      /* Floating small cards in Phase 3 */
+      html body .phone-small-glass-card {
+        position: absolute !important;
+        width: 150px !important;
+        height: 150px !important;
+        padding: 12px !important;
+        border-radius: 28px !important;
+        border: 1px solid rgba(107, 138, 255, 0.35) !important;
+        z-index: 12 !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s !important;
+      }
+
+      html body #small-card-1 {
+        right: calc(50% + min(540px, 68vh) * 0.25 - 75px) !important;
+        left: auto !important;
+        top: 90px !important;
+        transform: scale(0.9) !important;
+      }
+      html body #small-card-2 {
+        left: 50% !important;
+        right: auto !important;
+        top: 30px !important;
+        transform: translateX(-50%) scale(0.9) !important;
+      }
+      html body #small-card-3 {
+        left: calc(50% + min(540px, 68vh) * 0.25 - 75px) !important;
+        right: auto !important;
+        top: 90px !important;
+        transform: scale(0.9) !important;
+      }
+
+      html body #small-card-1.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: scale(1) !important;
+      }
+      html body #small-card-2.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateX(-50%) scale(1) !important;
+      }
+      html body #small-card-3.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: scale(1) !important;
+      }
+
+      /* Notification Cards (Bottom stack) */
+      html body .phone-notification-card,
+      html body .phone-right-notification-card {
+        position: absolute !important;
+        left: 50% !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: 85px !important;
+        width: 310px !important;
+        padding: 14px 18px !important;
+        border-radius: 24px !important;
+        z-index: 15 !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transform: translateX(-50%) translateY(20px) scale(0.9) !important;
+        transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s !important;
+      }
+
+      /* Active notifications */
+      html body .phone-notification-card.active,
+      html body .phone-right-notification-card.active {
+        opacity: 1 !important;
+        visibility: visible !important;
         transform: translateX(-50%) translateY(0) scale(1) !important;
       }
 
-      #phone-left-notification-2 {
+      html body #phone-left-notification-2,
+      html body #phone-left-notification-3 {
+        left: 50% !important;
+        right: auto !important;
         top: auto !important;
+        bottom: 85px !important;
+      }
+
+      /* Remove the top separator line (edge of second-layer-section) on mobile */
+      html body .second-layer-section {
+        margin-bottom: -2px !important;
+      }
+
+      /* Eliminate line/seam above wave design on mobile */
+      html body #portal.portal-section {
+        padding-bottom: 0px !important;
+        border: none !important;
+      }
+      html body .blue-half-layer {
+        margin-top: -4px !important;
+        border: none !important;
+      }
+      html body .cloud-divider {
+        top: -4px !important;
+      }
       }
     }
 
@@ -772,7 +886,7 @@
   </script>
   <!-- Firebase Initialization -->
   <script src="firebase.js?v=115" type="module"></script>
-  <script src="script.js?v=116" defer></script>
+  <script src="script.js?v=118" defer></script>
 </head>
 
 <body>
@@ -844,20 +958,45 @@
   <!-- Hero Video Section -->
   <section class="hero-video-section">
     <div class="video-container">
-      <video id="gameplay-video" autoplay muted loop playsinline preload="auto">
+      <video id="gameplay-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
         <source src="images/gameplay.mp4" type="video/mp4">
       </video>
       <script>
-        // Force immediate video play on load
+        // Force immediate video play on load and on first interaction (bypasses mobile restrictions)
         (function() {
           const video = document.getElementById('gameplay-video');
           if (video) {
-            video.play().catch(function(err) {
-              console.log("Autoplay was prevented or delayed:", err);
+            const playVideo = () => {
+              if (video.paused) {
+                video.play().catch(function(err) {
+                  console.log("Autoplay was prevented or delayed:", err);
+                });
+              }
+            };
+            // Initial attempt
+            video.play().catch(function() {});
+            
+            // Interaction listeners
+            const interactionEvents = ['touchstart', 'click', 'scroll', 'mousedown'];
+            interactionEvents.forEach(function(evt) {
+              document.addEventListener(evt, playVideo, { once: true, passive: true });
             });
-            document.addEventListener('DOMContentLoaded', function() { video.play().catch(() => {}); });
-            window.addEventListener('load', function() { video.play().catch(() => {}); });
           }
+          
+          // Also apply to all other video elements on first interaction
+          const forcePlayAllVideos = () => {
+            document.querySelectorAll("video").forEach(function(vid) {
+              if (vid.paused) {
+                vid.play().catch(function(e) {
+                  console.log("Secondary video autoplay failed:", e);
+                });
+              }
+            });
+          };
+          const interactionEvents = ['touchstart', 'click', 'scroll', 'mousedown'];
+          interactionEvents.forEach(function(evt) {
+            document.addEventListener(evt, forcePlayAllVideos, { once: true, passive: true });
+          });
         })();
       </script>
     </div>
@@ -933,10 +1072,10 @@
         <!-- Inner Phone Screen Mockup -->
         <div class="phone-screen-mockup">
           <div class="phone-screen-shine"></div>
-          <!-- Fullscreen Loop Video (Phase 4 / End) -->
-          <video class="phone-screen-video" autoplay loop muted playsinline>
-            <source src="https://www.dropbox.com/scl/fi/2247do5hc4ipwk8qd1w6e/peddritorangel_pindown.io_1782864535.mp4?rlkey=1kqb0fzs5fa19zr2t94ie3g36&st=r6wnf2no&dl=1" type="video/mp4">
+          <video class="phone-screen-video" autoplay loop muted playsinline webkit-playsinline>
+            <source src="images/phone-screen-video.mp4" type="video/mp4">
             Your browser does not support the video tag.
+          </video>
         </div>
       </div>
 
@@ -989,7 +1128,7 @@
           <span class="notification-app-name">DESTINY REWARDS</span>
         </div>
         <p class="notification-text">JOIN US AND HELP US GROW OUR COMMUNITY</p>
-        <a href="https://t.me/Destinyrewards_bot" target="_blank" class="notification-buy-btn"><img src="https://www.dropbox.com/scl/fi/0c7uekuupio6rckmdf72u/telegram-white-icon.webp?rlkey=gwg7wb0xie3cr5kab7jdatjw4&st=m3d5ml2y&dl=1" alt="Telegram" class="notification-btn-icon">JOIN US</a>
+        <a href="https://t.me/Destinyrewards_bot" target="_blank" class="notification-buy-btn"><svg class="notification-btn-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px; margin-right: 8px; display: inline-block; vertical-align: middle;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.11.02-1.93 1.23-5.46 3.62-.51.35-.98.53-1.39.51-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.36-.49.99-.75 3.88-1.69 6.46-2.8 7.74-3.32 3.68-1.5 4.44-1.76 4.94-1.77.11 0 .36.03.52.16.13.11.17.26.19.37 0 .07.01.21 0 .33z"/></svg>JOIN US</a>
       </div>
 
       <!-- Floating Glass Cards for Phase 3 -->
@@ -1087,11 +1226,11 @@
   <section class="blue-half-layer">
     <!-- Cloud Style Divider & Shadow -->
     <div class="cloud-divider">
-      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 1440 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Shadow Cloud -->
-        <path d="M0,0 C100,45 190,65 290,65 C390,65 470,25 550,45 C630,65 710,85 810,85 C910,85 990,45 1070,55 C1150,65 1250,95 1350,75 C1400,65 1430,35 1440,0 Z" fill="rgba(0, 0, 0, 0.45)" transform="translate(0, 6)"></path>
+        <path d="M0,-10 L1440,-10 L1440,0 C1430,35 1400,65 1350,75 C1250,95 1150,65 1070,55 C990,45 910,85 810,85 C710,85 630,65 550,45 C470,25 390,65 290,65 C190,65 100,45 0,0 Z" fill="rgba(0, 0, 0, 0.45)" transform="translate(0, 6)"></path>
         <!-- Main Black Cloud -->
-        <path d="M0,0 C90,40 180,60 280,60 C380,60 460,20 540,40 C620,60 700,80 800,80 C900,80 980,40 1060,50 C1140,60 1240,90 1340,70 C1390,60 1420,30 1440,0 Z" fill="#000000"></path>
+        <path d="M0,-10 L1440,-10 L1440,0 C1390,30 1420,30 1340,70 C1240,90 1140,60 1060,50 C980,40 900,80 800,80 C700,80 620,60 540,40 C460,20 380,60 280,60 C180,60 90,40 0,0 Z" fill="#000000"></path>
       </svg>
     </div>
 
@@ -1159,6 +1298,84 @@
 
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999;"></canvas>
+  <script>
+  (function () {
+      var DSR_CONFIG = {
+          apiKey: "AIzaSyBOCEyQN4zcZyNTWhO9-mN1-sBxM3RSywI",
+          authDomain: "destiny-rewards-f3a5d.firebaseapp.com",
+          projectId: "destiny-rewards-f3a5d",
+          storageBucket: "destiny-rewards-f3a5d.firebasestorage.app",
+          messagingSenderId: "650427918746",
+          appId: "1:650427918746:web:6a8c4c94f38169a28bf223"
+      };
+
+      // Unique ID per tab
+      var sid = sessionStorage.getItem("dsr_sid");
+      if (!sid) {
+          sid = "v_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+          sessionStorage.setItem("dsr_sid", sid);
+      }
+
+      var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      // Load two scripts IN PARALLEL (faster)
+      var loaded = 0;
+      function onLoaded() {
+          loaded++;
+          if (loaded === 2) startTracker();
+      }
+
+      function loadScript(url) {
+          var s = document.createElement("script");
+          s.src = url; s.async = true;
+          s.onload = onLoaded; s.onerror = onLoaded;
+          document.head.appendChild(s);
+      }
+
+      loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
+      loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js");
+
+      function startTracker() {
+          try {
+              // ✅ Named app = no conflict with website's own Firebase
+              var app;
+              try { app = firebase.app("dsr-tracker"); }
+              catch(e) { app = firebase.initializeApp(DSR_CONFIG, "dsr-tracker"); }
+
+              var db = app.firestore();
+              var ref = db.collection("activeVisitors").doc(sid);
+
+              function goOnline() {
+                  ref.set({
+                      online: true,
+                      deviceType: isMobile ? "mobile" : "desktop",
+                      lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                      sessionId: sid
+                  }, { merge: true }).catch(function(){});
+              }
+
+              function goOffline() {
+                  ref.update({ online: false, lastSeen: firebase.firestore.FieldValue.serverTimestamp() }).catch(function(){});
+              }
+
+              // Go online immediately
+              goOnline();
+
+              // Heartbeat every 25s to stay alive
+              setInterval(goOnline, 25000);
+
+              // Tab hidden = offline, visible = online
+              document.addEventListener("visibilitychange", function() {
+                  document.visibilityState === "hidden" ? goOffline() : goOnline();
+              });
+
+              // Page close = offline
+              window.addEventListener("beforeunload", goOffline);
+
+          } catch(e) { console.log("Tracker:", e); }
+      }
+  })();
+  </script>
 </body>
 
 </html>

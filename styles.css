@@ -2826,16 +2826,40 @@ html {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .side-message-panel {
-    width: 95%;
-    max-width: 480px;
+    width: 95% !important;
+    max-width: 480px !important;
+    aspect-ratio: 1.65 !important;
+    transform: translate(-50%, -50%) scale(0.95) !important;
+  }
+
+  .side-message-panel.active {
+    transform: translate(-50%, -50%) scale(1) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
 
   .side-message-close {
-    top: 12px;
-    right: 12px;
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
+    top: 14px !important;
+    right: 14px !important;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 18px !important;
+  }
+
+  .modal-image-only {
+    left: -5.5% !important;
+    top: -10% !important;
+    width: 110% !important;
+    height: 120% !important;
+    object-fit: cover !important;
+    object-position: left center !important;
+  }
+
+  .modal-telegram-overlay-link {
+    left: -1% !important;
+    bottom: 9% !important;
+    width: 37.5% !important;
+    height: 13.5% !important;
   }
 }
 
@@ -3551,9 +3575,11 @@ html {
 }
 
 #challenge-container.logged-out .challenge-left-panel,
-#challenge-container.logged-out .challenge-right-panel {
+#challenge-container.logged-out .challenge-right-panel,
+#challenge-container.logged-out .user-profile-widget {
   opacity: 0;
   visibility: hidden;
+  display: none !important;
   pointer-events: none;
 }
 
@@ -4773,6 +4799,30 @@ html {
     flex-direction: column;
     padding: 120px 24px 60px 24px !important;
     gap: 36px;
+  }
+
+  .blue-layer-left {
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .blue-layer-logo-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+  }
+
+  .blue-layer-socials {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .blue-layer-description {
+    text-align: center !important;
+    margin: 0 auto !important;
   }
   
   .blue-layer-right {
@@ -6775,5 +6825,536 @@ html {
 .blink-dot {
   animation: pulseBlink 1.2s infinite ease-in-out !important;
 }
+
+/* ============================================================
+   MOBILE RESPONSIVENESS OVERRIDES (max-width: 850px)
+   ============================================================ */
+@media (max-width: 850px) {
+  /* Prevent horizontal scrolling and right-side white strip without breaking sticky */
+  html, body {
+    width: 100% !important;
+    overflow-x: clip !important;
+  }
+
+  /* Keep logo in the center on mobile phone (except challenge page) */
+  html body:not(.challenge-page-body) .brand-logo-glass-container {
+    left: 50% !important;
+    transform: translate(-50%, 0) scale(0.85) !important;
+    transform-origin: center top !important;
+  }
+
+
+  @keyframes introLogoContainer {
+    0% {
+      top: var(--logo-top);
+      left: 50%;
+      transform: translate(-50%, var(--logo-translate-start)) scale(1);
+      width: var(--logo-size);
+      animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    14.1% {
+      top: var(--logo-top);
+      left: 50%;
+      transform: translate(-50%, 0) scale(1);
+      width: var(--logo-size);
+      animation-timing-function: ease-in-out;
+    }
+
+    23.5% {
+      top: var(--logo-top);
+      left: 50%;
+      transform: translate(-50%, 0) scale(1);
+      width: var(--logo-expanded-width);
+      animation-timing-function: linear;
+    }
+
+    76.5% {
+      top: var(--logo-top);
+      left: 50%;
+      transform: translate(-50%, 0) scale(1);
+      width: var(--logo-expanded-width);
+      animation-timing-function: ease-in-out;
+    }
+
+    100% {
+      top: var(--logo-target-top);
+      left: 50%;
+      transform: translate(-50%, 0) scale(0.85);
+      width: var(--logo-expanded-width);
+    }
+  }
+
+  /* Make mockup frame highly responsive and prevent collapsing */
+  html body .phone-frame-mockup {
+    width: calc(min(540px, 68vh) * 0.5) !important;
+    height: min(540px, 68vh) !important;
+    max-width: calc(100% - 30px) !important;
+    max-height: 68vh !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    z-index: 10 !important;
+    border-radius: 44px !important;
+    padding: 10px !important;
+  }
+  .phone-screen-mockup {
+    border-radius: 34px !important;
+  }
+  .phone-notch {
+    width: 33% !important;
+    height: 22px !important;
+    border-radius: 12px !important;
+    top: 14px !important;
+  }
+
+  /* Scale font and padding in notifications on mobile */
+  .notification-header {
+    margin-bottom: 8px !important;
+  }
+
+  .notification-text {
+    font-size: 0.85rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .notification-buy-btn {
+    font-size: 0.8rem !important;
+    padding: 8px 0 !important;
+    border-radius: 12px !important;
+  }
+
+  /* Scale FAQ accordion title for mobile screen sizes */
+  .faq-accordion-title {
+    font-size: 1.8rem !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* Make sticky zoom title wrap and responsive on mobile */
+  html body .second-layer-title {
+    font-size: 1.65rem !important;
+    width: 90% !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
+    top: -65px !important;
+  }
+}
+
+/* ============================================================
+   MOBILE NAVIGATION AND PAGE SPECIFIC ADJUSTMENTS (max-width: 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Relocate sticky nav to the bottom — full size, no scaling */
+  html body #sticky-nav {
+    top: auto !important;
+    bottom: 18px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, 120px) !important;
+    transform-origin: center bottom !important;
+    opacity: 0 !important;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease !important;
+    width: calc(100% - 16px) !important;
+    max-width: 520px !important;
+    padding: 0 18px !important;
+    height: 58px !important;
+  }
+
+  html body #sticky-nav.visible {
+    transform: translate(-50%, 0) !important;
+    opacity: 1 !important;
+  }
+
+  /* Nav links — full size, spaced to fill the wider glass pill */
+  .sticky-nav-links {
+    gap: 6px !important;
+  }
+
+  .sticky-nav-link {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.4px !important;
+    padding: 5px 7px !important;
+    white-space: nowrap !important;
+  }
+
+  .nav-home-icon {
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+    margin-right: 4px !important;
+  }
+
+  .nav-buy-icon {
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+    margin-right: 4px !important;
+  }
+
+  .nav-spin-icon {
+    width: 1rem !important;
+    height: 1rem !important;
+    margin-right: 4px !important;
+  }
+
+  .nav-lock-icon {
+    height: 0.9rem !important;
+    margin-right: 4px !important;
+  }
+
+  /* Nav bubble matches the taller bar */
+  .nav-sliding-bubble {
+    height: 68px !important;
+    top: -5px !important;
+  }
+
+  /* Relocate speaker toggle button on challenge page on mobile to the right side (marked with O) */
+  html body > .speaker-toggle-btn,
+  html body .speaker-toggle-btn {
+    position: fixed !important;
+    right: 36px !important;
+    left: auto !important;
+    top: calc(var(--logo-target-top) + (var(--logo-size) - 48px) / 2) !important;
+    z-index: 101 !important;
+    transition: opacity 0.3s ease, visibility 0.3s ease !important;
+  }
+
+  /* Hide speaker toggle button when Coming Soon modal (Bid / For Free) is active on mobile */
+  body.modal-open .speaker-toggle-btn,
+  body.modal-active .speaker-toggle-btn,
+  body:has(.modal-backdrop.active) .speaker-toggle-btn,
+  body:has(.side-message-panel.active) .speaker-toggle-btn {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Make challenge page fill the screen vertically with equal spacing above (from logo) and below (to nav bar) */
+  html body #challenge-page {
+    padding-top: 96px !important;
+    padding-bottom: 98px !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Challenge container for both logged-out and logged-in states on mobile */
+  html body #challenge-container {
+    width: calc(100% - 20px) !important;
+    max-width: 355px !important;
+    height: auto !important;
+    max-height: calc(100vh - 194px) !important;
+    min-height: auto !important;
+    padding: 14px 14px 18px 14px !important;
+    border-radius: 28px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  html body #challenge-container.logged-out {
+    height: calc(100vh - 194px) !important;
+    min-height: 420px !important;
+    justify-content: center !important;
+  }
+  html body #challenge-container::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* User Profile Widget on mobile challenge page - moved to the RIGHT side as requested */
+  .user-profile-widget {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    height: 40px !important;
+    border-radius: 20px !important;
+    padding: 0 4px 0 14px !important;
+    margin: 0 0 10px auto !important;
+    align-self: flex-end !important;
+    max-width: 90% !important;
+    width: fit-content !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-shrink: 0 !important;
+  }
+
+  #challenge-container.logged-out .user-profile-widget {
+    display: none !important;
+  }
+
+  #challenge-container:not(.logged-out) .user-profile-widget {
+    display: flex !important;
+  }
+  .profile-logout-btn {
+    margin-right: 8px !important;
+  }
+  .profile-logout-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  .profile-text-container {
+    margin-right: 10px !important;
+  }
+  .profile-name {
+    font-size: 0.95rem !important;
+  }
+  .profile-id {
+    font-size: 0.75rem !important;
+    margin-top: 1px !important;
+  }
+  .profile-avatar-container {
+    width: 44px !important;
+    height: 44px !important;
+    margin-right: 0 !important;
+    border: 2px solid #000000 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Spin Wheel Left Panel on mobile - gap below wheel completely removed */
+  .challenge-left-panel {
+    width: 100% !important;
+    height: auto !important;
+    margin-top: 6px !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+  }
+  .wheel-outer-container {
+    width: 215px !important;
+    height: 215px !important;
+    margin: 0 auto !important;
+  }
+  #wheel-canvas {
+    width: 205px !important;
+    height: 205px !important;
+  }
+  #spin-btn {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 0.72rem !important;
+    border-width: 3px !important;
+  }
+
+  /* Challenge Right Panel on mobile - snug directly to the wheel with 0 padding/margins */
+  .challenge-right-panel {
+    width: 100% !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  .challenge-title {
+    font-family: 'Bangers', cursive, sans-serif !important;
+    font-size: 1.4rem !important;
+    line-height: 1.22 !important;
+    letter-spacing: 0.5px !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    background: #18181b !important;
+    border-top-left-radius: 36px !important;
+    border-bottom-left-radius: 36px !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    padding: 10px 18px 10px 32px !important;
+    margin: 0 -14px 10px auto !important;
+    width: 280px !important;
+    max-width: calc(100% + 14px) !important;
+    box-sizing: border-box !important;
+    align-self: flex-end !important;
+  }
+  .challenge-title::after {
+    display: none !important;
+  }
+  .title-second-line {
+    display: inline-block !important;
+    margin-left: 20px !important;
+  }
+  .challenge-desc {
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+    margin: 0 0 10px 0 !important;
+    max-width: 100% !important;
+    text-align: center !important;
+    align-self: center !important;
+  }
+  .cooldown-timer {
+    font-size: 1.15rem !important;
+    margin: 6px auto 12px auto !important;
+    text-align: center !important;
+    align-self: center !important;
+  }
+  #start-challenge-btn {
+    padding: 10px 36px !important;
+    font-size: 1rem !important;
+    border-radius: 25px !important;
+    margin: 0 auto !important;
+    align-self: center !important;
+  }
+
+  /* Optimize signup gate spacing and sizes for tiny compact card */
+  .signup-gate-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 20px 14px !important;
+    border-radius: 28px !important;
+    box-sizing: border-box !important;
+  }
+
+  .signup-gate-lock-icon {
+    width: 56px !important;
+    height: 56px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .signup-gate-lock-icon svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .signup-gate-title {
+    font-size: 1.85rem !important;
+    letter-spacing: 1px !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.15 !important;
+  }
+
+  .signup-gate-desc {
+    font-size: 0.82rem !important;
+    line-height: 1.35 !important;
+    margin: 0 0 16px 0 !important;
+    max-width: 280px !important;
+  }
+
+  .google-signin-btn {
+    height: 42px !important;
+    font-size: 14px !important;
+    padding: 0 18px !important;
+    margin-top: 6px !important;
+  }
+
+  /* Responsive adjust for Buy Page Header */
+  .buy-title {
+    font-size: 2.2rem !important;
+  }
+
+  /* Mobile Logo Marquee Swiper (Home Section) - 2 big logos visible in frame */
+  .scroll-spacer {
+    height: 160px !important;
+    min-height: 160px !important;
+  }
+  .marquee-content {
+    gap: 45px !important;
+    padding: 0 20px !important;
+  }
+  .marquee-content img {
+    height: 95px !important;
+    width: auto !important;
+  }
+}
+
+/* ============================================================
+   EXTRA LAYOUT OPTIMIZATIONS FOR ULTRA-SMALL SCREENS (max-width: 600px)
+   ============================================================ */
+@media (max-width: 600px) {
+  /* Set top padding to align the top space to exactly 32px from the centered logo */
+  html body #buy-page {
+    padding-top: 106px !important;
+  }
+
+  .buy-header-panel {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 32px !important; /* Equal spacing below the widget */
+  }
+
+  /* Move "Sign in with Google" widget ABOVE "OUR PRODUCT" title on mobile */
+  html body .buy-profile-widget-wrapper {
+    order: -1 !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  html body .buy-title-group {
+    order: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    padding-left: 16px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .blue-layer-nav-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Nav bar on smallest phones — full width, no scaling */
+  html body #sticky-nav {
+    bottom: 16px !important;
+    width: calc(100% - 16px) !important;
+    max-width: 420px !important;
+    padding: 0 14px !important;
+    height: 54px !important;
+  }
+
+  .sticky-nav-links {
+    gap: 4px !important;
+  }
+
+  .sticky-nav-link {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.2px !important;
+    white-space: nowrap !important;
+    padding: 4px 6px !important;
+  }
+
+  .nav-home-icon,
+  .nav-buy-icon {
+    width: 0.82rem !important;
+    height: 0.82rem !important;
+    margin-right: 4px !important;
+  }
+
+  .nav-spin-icon {
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+    margin-right: 4px !important;
+  }
+
+  .nav-lock-icon {
+    height: 0.82rem !important;
+    margin-right: 4px !important;
+  }
+
+  .nav-sliding-bubble {
+    height: 64px !important;
+    top: -5px !important;
+  }
+}
+
 
 

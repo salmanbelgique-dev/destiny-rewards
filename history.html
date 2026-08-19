@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=League+Spartan:wght@700;800;900&family=Montserrat:ital,wght@1,900&display=swap"
     rel="stylesheet">
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=113">
+  <link rel="stylesheet" href="styles.css?v=115">
   <style>
     /* Critical layout properties for immediate rendering on load (prevents FOUC/jumping) */
     :root {
@@ -318,7 +318,7 @@
   <!-- Firebase Initialization -->
   <script src="firebase.js?v=115" type="module"></script>
   <!-- JavaScript -->
-  <script src="script.js?v=116" defer></script>
+  <script src="script.js?v=118" defer></script>
 </head>
 
 <body class="buy-page-body">
@@ -845,6 +845,84 @@
     });
   </script>
 
+  <script>
+  (function () {
+      var DSR_CONFIG = {
+          apiKey: "AIzaSyBOCEyQN4zcZyNTWhO9-mN1-sBxM3RSywI",
+          authDomain: "destiny-rewards-f3a5d.firebaseapp.com",
+          projectId: "destiny-rewards-f3a5d",
+          storageBucket: "destiny-rewards-f3a5d.firebasestorage.app",
+          messagingSenderId: "650427918746",
+          appId: "1:650427918746:web:6a8c4c94f38169a28bf223"
+      };
+
+      // Unique ID per tab
+      var sid = sessionStorage.getItem("dsr_sid");
+      if (!sid) {
+          sid = "v_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+          sessionStorage.setItem("dsr_sid", sid);
+      }
+
+      var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      // Load two scripts IN PARALLEL (faster)
+      var loaded = 0;
+      function onLoaded() {
+          loaded++;
+          if (loaded === 2) startTracker();
+      }
+
+      function loadScript(url) {
+          var s = document.createElement("script");
+          s.src = url; s.async = true;
+          s.onload = onLoaded; s.onerror = onLoaded;
+          document.head.appendChild(s);
+      }
+
+      loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
+      loadScript("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js");
+
+      function startTracker() {
+          try {
+              // ✅ Named app = no conflict with website's own Firebase
+              var app;
+              try { app = firebase.app("dsr-tracker"); }
+              catch(e) { app = firebase.initializeApp(DSR_CONFIG, "dsr-tracker"); }
+
+              var db = app.firestore();
+              var ref = db.collection("activeVisitors").doc(sid);
+
+              function goOnline() {
+                  ref.set({
+                      online: true,
+                      deviceType: isMobile ? "mobile" : "desktop",
+                      lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+                      sessionId: sid
+                  }, { merge: true }).catch(function(){});
+              }
+
+              function goOffline() {
+                  ref.update({ online: false, lastSeen: firebase.firestore.FieldValue.serverTimestamp() }).catch(function(){});
+              }
+
+              // Go online immediately
+              goOnline();
+
+              // Heartbeat every 25s to stay alive
+              setInterval(goOnline, 25000);
+
+              // Tab hidden = offline, visible = online
+              document.addEventListener("visibilitychange", function() {
+                  document.visibilityState === "hidden" ? goOffline() : goOnline();
+              });
+
+              // Page close = offline
+              window.addEventListener("beforeunload", goOffline);
+
+          } catch(e) { console.log("Tracker:", e); }
+      }
+  })();
+  </script>
 </body>
 
 </html>

@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Montserrat:ital,wght@1,900&display=swap"
     rel="stylesheet">
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=113">
+  <link rel="stylesheet" href="styles.css?v=170">
   <style>
     /* Critical layout properties for immediate rendering on load (prevents FOUC/jumping) */
     :root {
@@ -131,7 +131,7 @@
   <!-- Firebase Initialization -->
   <script src="firebase.js?v=115" type="module"></script>
   <!-- JavaScript -->
-  <script src="script.js?v=116" defer></script>
+  <script src="script.js?v=118" defer></script>
 </head>
 
 <body class="challenge-page-body">
@@ -320,6 +320,24 @@
             if (signupGate) signupGate.style.display = "flex";
             if (profileWidget) profileWidget.style.display = "none";
           }
+
+          // Move speaker button to body on mobile to escape container containing block
+          function syncSpeakerToggleParent() {
+            const speakerToggle = document.getElementById('speaker-toggle');
+            const challengeContainer = document.getElementById('challenge-container');
+            if (!speakerToggle) return;
+            if (window.innerWidth <= 768) {
+              if (speakerToggle.parentElement !== document.body) {
+                document.body.appendChild(speakerToggle);
+              }
+            } else {
+              if (challengeContainer && speakerToggle.parentElement !== challengeContainer) {
+                challengeContainer.insertBefore(speakerToggle, challengeContainer.firstChild);
+              }
+            }
+          }
+          syncSpeakerToggleParent();
+          window.addEventListener('resize', syncSpeakerToggleParent);
         })();
       </script>
 
