@@ -1904,7 +1904,17 @@ function showProfileSetupGate(user, finalId, defaultName, defaultPhotoURL) {
   const avatarInput = document.getElementById("setup-avatar-input");
   
   if (signupGate) signupGate.style.display = "none";
-  if (profileSetupGate) profileSetupGate.style.display = "flex";
+
+  // Move gate to body so position:fixed covers full viewport correctly
+  if (profileSetupGate.parentElement !== document.body) {
+    document.body.appendChild(profileSetupGate);
+  }
+
+  // Show gate, scroll page to top, and lock background scroll
+  window.scrollTo({ top: 0, behavior: "instant" });
+  document.documentElement.style.overflow = "hidden";
+  document.body.style.overflow = "hidden";
+  profileSetupGate.style.display = "flex";
   
   if (usernameInput && defaultName) {
     const cleanName = defaultName.replace(/[^a-zA-Z0-9_.-]/g, "").toLowerCase();
@@ -2015,6 +2025,8 @@ function showProfileSetupGate(user, finalId, defaultName, defaultPhotoURL) {
                       .catch(err => console.warn("RTDB username sync skipped/failed:", err));
                   }
                   if (profileSetupGate) profileSetupGate.style.display = "none";
+                  document.documentElement.style.overflow = "";
+                  document.body.style.overflow = "";
                   completeLogin(user, finalId, chosenName, defaultName, currentPhotoURL);
                 })
                 .catch(err => {
@@ -2040,6 +2052,8 @@ function showProfileSetupGate(user, finalId, defaultName, defaultPhotoURL) {
       } else {
         // Fallback if Firestore not loaded
         if (profileSetupGate) profileSetupGate.style.display = "none";
+        document.documentElement.style.overflow = "";
+        document.body.style.overflow = "";
         completeLogin(user, finalId, chosenName, defaultName, currentPhotoURL);
       }
     });
@@ -2114,6 +2128,8 @@ function completeLogin(user, finalId, chosenName, googleName, chosenPhotoURL) {
   if (profileWidget) profileWidget.style.display = "flex";
   if (signupGate) signupGate.style.display = "none";
   if (profileSetupGate) profileSetupGate.style.display = "none";
+  document.documentElement.style.overflow = "";
+  document.body.style.overflow = "";
 
   initProfileWidget();
   
